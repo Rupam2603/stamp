@@ -1,0 +1,419 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+
+const COOLDOWN_MINUTES = 10;
+const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
+const MIN_SPEND_RS = 50;
+
+export default function StampSimulator() {
+  const [stamps, setStamps] = useState<number>(0);
+  const [completedCards, setCompletedCards] = useState<number>(0);
+  const [lastStampTime, setLastStampTime] = useState<number | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
+  const [isResetting, setIsResetting] = useState<boolean>(false);
+  const [simulatedSpend, setSimulatedSpend] = useState<number>(60);
+  const [banner, setBanner] = useState<{ text: string; type: 'reward' | 'info' | 'warning' } | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const totalStamps = 3;
+
+  // Format seconds to mm:ss
+  const formatTime = (totalSecs: number) => {
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Live timer interval
+  useEffect(() => {
+    if (!lastStampTime || stamps === 0 || stamps >= totalStamps) {
+      setSecondsRemaining(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - lastStampTime;
+      const remaining = Math.max(0, Math.ceil((COOLDOWN_MS - elapsed) / 1000));
+      setSecondsRemaining(remaining);
+
+      if (remaining === 0) {
+        setBanner((prev) => {
+          if (prev?.type === 'warning') {
+            return {
+              type: 'info',
+              text: '✨ 10 minutes have passed! You can now collect your next stamp with a ₹50+ order.',
+            };
+          }
+          return prev;
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lastStampTime, stamps]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const isLocked = secondsRemaining > 0 && stamps > 0 && stamps < totalStamps;
+
+  const handleAddStamp = () => {
+    if (isResetting) return;
+
+    if (simulatedSpend < MIN_SPEND_RS) {
+      setBanner({
+        type: 'warning',
+        text: `⚠️ Minimum ₹50 spend required! Selected order is ₹${simulatedSpend}. Need ₹${MIN_SPEND_RS - simulatedSpend} more to qualify for a stamp.`,
+      });
+      return;
+    }
+
+    if (isLocked) {
+      setBanner({
+        type: 'warning',
+        text: `⏳ 10-Minute Adda Rule: Please wait ${formatTime(secondsRemaining)} or re-open the website after 10 minutes to collect your next stamp.`,
+      });
+      return;
+    }
+
+    const nextStamp = stamps + 1;
+    const now = Date.now();
+
+    if (nextStamp < totalStamps) {
+      setStamps(nextStamp);
+      setLastStampTime(now);
+      setSecondsRemaining(COOLDOWN_MINUTES * 60);
+      setBanner({
+        type: 'warning',
+        text: `🍵 Order ₹${simulatedSpend} Qualified! Stamp ${nextStamp} of ${totalStamps} collected! 10-minute wait required. Re-open website after 10 mins!`,
+      });
+    } else {
+      // 3rd stamp collected -> all 3 collected!
+      setStamps(3);
+      setLastStampTime(null);
+      setSecondsRemaining(0);
+      setIsResetting(true);
+      setBanner({
+        type: 'reward',
+        text: '🎉 Congratulations! All 3 stamps collected! 1 Free Bhar Chai unlocked! Card is automatically resetting...',
+      });
+
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setStamps(0);
+        setCompletedCards((prev) => prev + 1);
+        setIsResetting(false);
+        setBanner({
+          type: 'info',
+          text: '↺ Card automatically reset! Ready for your next 3-stamp chai cycle.',
+        });
+        setTimeout(() => setBanner(null), 3500);
+      }, 2200);
+    }
+  };
+
+  const handleFastForwardDemo = () => {
+    setLastStampTime(Date.now() - COOLDOWN_MS - 1000);
+    setSecondsRemaining(0);
+    setBanner({
+      type: 'info',
+      text: '⚡ [Demo] Fast-forwarded 10 minutes! Stamp unlocked.',
+    });
+  };
+
+  const handleReset = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setStamps(0);
+    setLastStampTime(null);
+    setSecondsRemaining(0);
+    setIsResetting(false);
+    setBanner(null);
+  };
+
+  return (
+    <div className="demo-card-container">
+      <div className="demo-card-header">
+        <div className="demo-card-brand">
+          <div className="demo-logo-mini">
+            <Image
+              src="/logo.png"
+              alt="BHAAR MOSHAI Mini"
+              width={38}
+              height={38}
+            />
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1rem', lineHeight: 1.2 }}>
+              BHAAR MOSHAI CLUB
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#f59e0b' }}>
+              ৩-ভাঁড় লয়ালটি পাস · Min ₹50 Spend / Stamp
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {completedCards > 0 && (
+            <span
+              style={{
+                background: 'rgba(74, 222, 128, 0.16)',
+                border: '1px solid #4ade80',
+                color: '#4ade80',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                padding: '4px 10px',
+                borderRadius: '999px',
+              }}
+            >
+              🏆 {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Won!
+            </span>
+          )}
+          <span className="demo-member-badge">
+            {isLocked ? `⏳ LOCKED (${formatTime(secondsRemaining)})` : stamps === totalStamps ? '🎉 3/3 COLLECTED!' : 'GOLD ADDA MEMBER'}
+          </span>
+        </div>
+      </div>
+
+      {banner && (
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '10px 14px',
+            borderRadius: '12px',
+            fontSize: '0.84rem',
+            fontWeight: 600,
+            background:
+              banner.type === 'reward'
+                ? 'rgba(245, 158, 11, 0.18)'
+                : banner.type === 'warning'
+                ? 'rgba(234, 88, 12, 0.16)'
+                : 'rgba(56, 189, 248, 0.12)',
+            border:
+              banner.type === 'reward'
+                ? '1px solid #f59e0b'
+                : banner.type === 'warning'
+                ? '1px solid #ea580c'
+                : '1px solid rgba(56, 189, 248, 0.3)',
+            color:
+              banner.type === 'reward'
+                ? '#fbbf24'
+                : banner.type === 'warning'
+                ? '#fdba74'
+                : '#38bdf8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+          }}
+        >
+          <span>{banner.text}</span>
+          {isResetting && (
+            <span style={{ fontSize: '0.75rem', color: '#4ade80', whiteSpace: 'nowrap' }}>
+              Auto-resetting...
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* SIMULATED ORDER SPEND SELECTOR */}
+      <div style={{
+        background: 'rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '12px',
+        padding: '10px 14px',
+        marginBottom: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px',
+      }}>
+        <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+          Simulate Order Spend: <strong style={{ color: simulatedSpend >= 50 ? '#4ade80' : '#ea580c' }}>₹{simulatedSpend}</strong>
+          {simulatedSpend >= 50 ? ' (Eligible)' : ' (Under ₹50 Min)'}
+        </div>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          {[
+            { label: '₹35', value: 35 },
+            { label: '₹60', value: 60 },
+            { label: '₹120', value: 120 },
+          ].map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setSimulatedSpend(item.value)}
+              style={{
+                background: simulatedSpend === item.value ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.05)',
+                border: simulatedSpend === item.value ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
+                color: simulatedSpend === item.value ? '#fbbf24' : '#cbd5e1',
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="stamp-grid">
+        {Array.from({ length: totalStamps }).map((_, index) => {
+          const isStamped = index < stamps;
+          const isReward = index === totalStamps - 1;
+          const isNextSlotLocked = index === stamps && isLocked;
+
+          return (
+            <div
+              key={index}
+              className={`stamp-slot ${isStamped ? 'stamped' : ''} ${isReward ? 'reward-slot' : ''}`}
+              onClick={handleAddStamp}
+              title={
+                isStamped
+                  ? `Stamp ${index + 1} collected!`
+                  : isNextSlotLocked
+                  ? `Locked: wait ${formatTime(secondsRemaining)}`
+                  : `Collect stamp ${index + 1} (Min ₹50 spend)`
+              }
+              style={{
+                cursor: isResetting || isLocked ? 'not-allowed' : 'pointer',
+                transform: isStamped ? 'scale(1.02)' : 'scale(1)',
+                transition: 'all 0.3s ease',
+                opacity: isNextSlotLocked ? 0.75 : 1,
+              }}
+            >
+              <div className="stamp-number">
+                {isReward ? '3RD CUP FREE!' : `BHAR #${index + 1}`}
+              </div>
+              <div className="stamp-icon">
+                {isStamped ? (
+                  isReward ? '🎁' : '🍵'
+                ) : isNextSlotLocked ? (
+                  '🔒'
+                ) : (
+                  isReward ? '✨' : '○'
+                )}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: isStamped ? '#f59e0b' : isNextSlotLocked ? '#ea580c' : '#64748b', fontWeight: 600 }}>
+                {isStamped
+                  ? isReward
+                    ? 'Free Chai!'
+                    : 'Stamped'
+                  : isNextSlotLocked
+                  ? `Wait ${formatTime(secondsRemaining)}`
+                  : isReward
+                  ? '3rd Reward'
+                  : 'Min ₹50'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="stamp-action-bar">
+        <div className="stamp-counter-text">
+          Progress: <strong>{stamps}</strong> of <strong>{totalStamps}</strong> stamps
+          {isLocked && (
+            <span style={{ display: 'block', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
+              ⏳ Next stamp unlocks in {formatTime(secondsRemaining)} (Re-open website after 10 mins)
+            </span>
+          )}
+          {simulatedSpend < MIN_SPEND_RS && !isLocked && (
+            <span style={{ display: 'block', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
+              ⚠️ Min ₹50 order required (Need ₹{MIN_SPEND_RS - simulatedSpend} more)
+            </span>
+          )}
+          {stamps === totalStamps && (
+            <span style={{ display: 'block', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
+              ✓ All 3 Collected! Card automatically resetting for round {completedCards + 2}...
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="interactive-stamp-btn"
+            onClick={handleAddStamp}
+            disabled={isResetting || isLocked}
+            style={{ opacity: isResetting || isLocked ? 0.65 : 1, cursor: isResetting || isLocked ? 'not-allowed' : 'pointer' }}
+          >
+            {isResetting
+              ? 'Auto-resetting... ↺'
+              : isLocked
+              ? `Wait ${formatTime(secondsRemaining)} ⏳`
+              : simulatedSpend < MIN_SPEND_RS
+              ? `Bill Under ₹50 (₹${simulatedSpend})`
+              : stamps === 0
+              ? 'Tap to Stamp #1 🍵'
+              : stamps < totalStamps
+              ? `Tap for Stamp #${stamps + 1} 🍵`
+              : 'Card Complete! 🎁'}
+          </button>
+
+          {isLocked && (
+            <button
+              type="button"
+              onClick={handleFastForwardDemo}
+              style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid #f59e0b',
+                color: '#fbbf24',
+                borderRadius: '999px',
+                padding: '6px 12px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+              title="Fast forward 10 minutes to test collecting next stamp"
+            >
+              ⚡ Skip 10m
+            </button>
+          )}
+
+          {stamps > 0 && !isResetting && (
+            <button
+              type="button"
+              onClick={handleReset}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#94a3b8',
+                borderRadius: '999px',
+                padding: '6px 12px',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+              }}
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <Link
+          href="/loyalty"
+          style={{
+            color: '#f59e0b',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          View your full 3-stamp digital card & rewards →
+        </Link>
+      </div>
+    </div>
+  );
+}
