@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { FirebaseError } from 'firebase/app';
 
 export default function SignUpPage() {
-  const { signUpWithEmail, signInWithGoogle, isSignedIn, isLoaded } = useAuth();
+  const { signUpWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,13 +15,6 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Redirect once signed in (catches both email and Google redirect result)
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      router.push('/activate');
-    }
-  }, [isLoaded, isSignedIn, router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,13 +35,13 @@ export default function SignUpPage() {
     setError(null);
     setGoogleLoading(true);
     try {
-      // signInWithRedirect navigates away — user returns signed in
       await signInWithGoogle();
+      router.push('/activate');
     } catch (err) {
-      setGoogleLoading(false);
       setError(err instanceof FirebaseError ? friendlyError(err.code) : 'Google sign up failed.');
+    } finally {
+      setGoogleLoading(false);
     }
-    // Don't set googleLoading false here — page is navigating away
   };
 
   return (

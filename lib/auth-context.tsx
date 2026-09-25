@@ -12,8 +12,7 @@ import {
   onAuthStateChanged,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
@@ -37,11 +36,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Pick up result after Google redirect returns
-    getRedirectResult(auth).catch(() => {
-      // Redirect result errors are handled by the calling page
-    });
-
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setIsLoaded(true);
@@ -52,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithRedirect(auth, provider);
+    await signInWithPopup(auth, provider);
   };
 
   const signUpWithEmail = async (
