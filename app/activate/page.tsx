@@ -18,7 +18,7 @@ export default function Activate() {
     }
   }, []);
 
-  // Loading state while Firebase initializes
+  // Loading state
   if (!isLoaded) {
     return (
       <main className="main-section" style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -34,7 +34,7 @@ export default function Activate() {
   if (isSignedIn && user) {
     const memberName = user.displayName || user.email?.split('@')[0] || 'Valued Guest';
     const memberContact = user.email || 'Linked to Account';
-    const memberPassId = `BM-2026-${user.uid.slice(-4).toUpperCase()}`;
+    const memberPassId = `BM-2026-${user.id?.slice(-4).toUpperCase() || '0000'}`;
 
     return (
       <main className="main-section" style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -3,93 +3,80 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   ReactNode,
+  useEffect,
+  useState
 } from 'react';
-import {
-  User,
-  onAuthStateChanged,
-  signOut as firebaseSignOut,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-} from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { NeonAuthUIProvider } from '@neondatabase/auth-ui';
+import '@neondatabase/auth-ui/css';
+import { authClient } from './auth/client';
+import { getSessionAction } from '@/app/actions/auth';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  stamps?: number;
+  completedCards?: number;
+  lastStampTime?: number | null;
+  isAdmin?: boolean;
+}
 
 interface AuthContextType {
   user: User | null;
   isLoaded: boolean;
   isSignedIn: boolean;
-  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const session = authClient.useSession();
+  const [dbUser, setDbUser] = useState<User | null>(null);
+  const [isDbLoaded, setIsDbLoaded] = useState(false);
+
+  const refreshUser = async () => {
+    if (session.data?.user) {
+      try {
+        const u = await getSessionAction();
+        setDbUser(u as any);
+      } catch(e) {
+        console.error(e);
+      }
+    } else {
+      setDbUser(null);
+    }
+    setIsDbLoaded(true);
+  };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setIsLoaded(true);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const signUpWithEmail = async (
-    email: string,
-    password: string,
-    displayName?: string
-  ) => {
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName && credential.user) {
-      await updateProfile(credential.user, { displayName });
+    if (!session.isPending) {
+      refreshUser();
     }
-    
-    // Save to Firestore
-    if (credential.user) {
-      await setDoc(doc(db, 'users', credential.user.uid), {
-        email: email,
-        displayName: displayName || '',
-        role: email.toLowerCase() === 'bhar@gmail.com' ? 'admin' : 'customer',
-        createdAt: new Date().toISOString(),
-        stamps: 0,
-        totalStamps: 3,
-        history: []
-      });
-    }
-  };
-
-  const signInWithEmail = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-  };
-
-
+  }, [session.isPending, session.data?.user?.id]);
 
   const signOut = async () => {
-    await firebaseSignOut(auth);
+    await authClient.signOut();
+    setDbUser(null);
+    window.location.href = '/';
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoaded,
-        isSignedIn: !!user,
-        signUpWithEmail,
-        signInWithEmail,
-
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <NeonAuthUIProvider authClient={authClient} redirectTo="/activate">
+      <AuthContext.Provider
+        value={{
+          user: dbUser,
+          isLoaded: !session.isPending && isDbLoaded,
+          isSignedIn: !!dbUser,
+          signOut,
+          refreshUser
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    </NeonAuthUIProvider>
   );
 }
 

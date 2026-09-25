@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getAllUsers } from '@/app/actions/admin';
 
 interface UserData {
   id: string;
   email: string;
-  displayName: string;
-  role: string;
+  name: string;
+  isAdmin: boolean;
   stamps: number;
   completedCards: number;
   createdAt: string;
@@ -39,23 +38,16 @@ export default function Admin() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'users'));
-      const usersData: UserData[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        usersData.push({
-          id: doc.id,
-          email: data.email || '',
-          displayName: data.displayName || '',
-          role: data.role || 'customer',
-          stamps: data.stamps || 0,
-          completedCards: data.completedCards || 0,
-          createdAt: data.createdAt || ''
-        });
-      });
-      // sort by creation date
-      usersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      setUsers(usersData);
+      const res = await getAllUsers();
+      if (res.success && res.users) {
+        const usersData = res.users.map(u => ({
+          ...u,
+          createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString()
+        }));
+        // sort by creation date
+        usersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setUsers(usersData);
+      }
     } catch (err) {
       console.error('Error fetching users:', err);
     } finally {
@@ -123,7 +115,7 @@ export default function Admin() {
                 ) : (
                   users.map(u => (
                     <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '12px', color: 'white' }}>{u.displayName || '-'} {u.role === 'admin' ? '(Admin)' : ''}</td>
+                      <td style={{ padding: '12px', color: 'white' }}>{u.name || '-'} {u.isAdmin ? '(Admin)' : ''}</td>
                       <td style={{ padding: '12px', color: '#cbd5e1' }}>{u.email}</td>
                       <td style={{ padding: '12px', color: '#f59e0b', fontWeight: 'bold' }}>{u.stamps} / 3</td>
                       <td style={{ padding: '12px', color: '#4ade80', fontWeight: 'bold' }}>{u.completedCards}</td>

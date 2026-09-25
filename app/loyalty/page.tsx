@@ -5,8 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { updateLoyaltyData } from '@/app/actions/loyalty';
 import { useRouter } from 'next/navigation';
 
 const COOLDOWN_MINUTES = 10;
@@ -50,14 +49,9 @@ export default function Loyalty() {
         let validCards = 0;
 
         if (user) {
-          const docRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            validStamps = typeof data.stamps === 'number' ? data.stamps : 0;
-            validTime = typeof data.lastStampTime === 'number' && data.lastStampTime > 0 ? data.lastStampTime : null;
-            validCards = typeof data.completedCards === 'number' ? data.completedCards : 0;
-          }
+          validStamps = typeof user.stamps === 'number' ? user.stamps : 0;
+          validTime = typeof user.lastStampTime === 'number' && user.lastStampTime > 0 ? user.lastStampTime : null;
+          validCards = typeof user.completedCards === 'number' ? user.completedCards : 0;
         } else {
           const savedStamps = parseInt(localStorage.getItem(STORAGE_KEYS.STAMPS) || '0', 10);
           const savedTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_TIME) || '0', 10);
@@ -119,8 +113,7 @@ export default function Loyalty() {
           
           try {
             if (user) {
-              const docRef = doc(db, 'users', user.uid);
-              updateDoc(docRef, { stamps: 0, lastStampTime: null, completedCards: nextCompleted }).catch(console.error);
+              updateLoyaltyData(0, nextCompleted, null).catch(console.error);
             }
             localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
             localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
@@ -191,8 +184,7 @@ export default function Loyalty() {
 
       try {
         if (user) {
-          const docRef = doc(db, 'users', user.uid);
-          updateDoc(docRef, { stamps: nextStamp, lastStampTime: now }).catch(console.error);
+          updateLoyaltyData(nextStamp, completedCards, now).catch(console.error);
         }
         localStorage.setItem(STORAGE_KEYS.STAMPS, String(nextStamp));
         localStorage.setItem(STORAGE_KEYS.LAST_TIME, String(now));
@@ -220,8 +212,7 @@ export default function Loyalty() {
       
       try {
         if (user) {
-          const docRef = doc(db, 'users', user.uid);
-          updateDoc(docRef, { stamps: 3, lastStampTime: now }).catch(console.error);
+          updateLoyaltyData(3, completedCards, now).catch(console.error);
         }
         localStorage.setItem(STORAGE_KEYS.STAMPS, '3');
         localStorage.setItem(STORAGE_KEYS.LAST_TIME, String(now));
@@ -259,8 +250,7 @@ export default function Loyalty() {
     setIsAutoResetting(false);
     try {
       if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        updateDoc(docRef, { stamps: 0, lastStampTime: null }).catch(console.error);
+        updateLoyaltyData(0, completedCards, null).catch(console.error);
       }
       localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
       localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
