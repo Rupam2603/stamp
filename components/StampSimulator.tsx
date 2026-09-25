@@ -27,9 +27,8 @@ export default function StampSimulator() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Live timer interval
   useEffect(() => {
-    if (!lastStampTime || stamps === 0 || stamps >= totalStamps) {
+    if (!lastStampTime || stamps === 0) {
       setSecondsRemaining(0);
       return;
     }
@@ -38,10 +37,17 @@ export default function StampSimulator() {
       const elapsed = Date.now() - lastStampTime;
       const remaining = Math.max(0, Math.ceil((COOLDOWN_MS - elapsed) / 1000));
       setSecondsRemaining(remaining);
+      
+      if (remaining === 0 && stamps === totalStamps) {
+        setStamps(0);
+        setCompletedCards((prev) => prev + 1);
+        setLastStampTime(null);
+        setIsResetting(false);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastStampTime, stamps]);
+  }, [lastStampTime, stamps, totalStamps]);
 
   useEffect(() => {
     return () => {
@@ -49,7 +55,7 @@ export default function StampSimulator() {
     };
   }, []);
 
-  const isLocked = secondsRemaining > 0 && stamps > 0 && stamps < totalStamps;
+  const isLocked = secondsRemaining > 0 && stamps > 0;
 
   const handleAddStamp = () => {
     if (isResetting) return;
@@ -70,20 +76,13 @@ export default function StampSimulator() {
       setLastStampTime(now);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
     } else {
-      // 3rd stamp collected -> all 3 collected!
+      // 3rd stamp collected -> all 3 collected! Wait 10 mins before new card.
       setStamps(3);
       setAnimatingIndex(stamps);
       setTimeout(() => setAnimatingIndex(null), 600);
-      setLastStampTime(null);
-      setSecondsRemaining(0);
-      setIsResetting(true);
-
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        setStamps(0);
-        setCompletedCards((prev) => prev + 1);
-        setIsResetting(false);
-      }, 2200);
+      setLastStampTime(now);
+      setSecondsRemaining(COOLDOWN_MINUTES * 60);
+      setIsResetting(false);
     }
   };
 
@@ -146,7 +145,7 @@ export default function StampSimulator() {
             </span>
           )}
           <span className="demo-member-badge flex items-center gap-1">
-            {isLocked ? <><Lock size={14} className="inline-block" /> LOCKED</> : stamps === totalStamps ? <><PartyPopper size={14} className="inline-block" /> 3/3 COLLECTED!</> : 'GOLD ADDA MEMBER'}
+            {stamps === totalStamps ? <><PartyPopper size={14} className="inline-block" /> GET OFFERS!</> : isLocked ? <><Lock size={14} className="inline-block" /> LOCKED</> : 'GOLD ADDA MEMBER'}
           </span>
         </div>
       </div>
@@ -213,7 +212,7 @@ export default function StampSimulator() {
 
           {stamps === totalStamps && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              <CheckCircle2 size={14} className="inline-block" /> All 3 Collected! Card automatically resetting for round {completedCards + 2}...
+              <CheckCircle2 size={14} className="inline-block" /> Get offers! New card available soon.
             </span>
           )}
         </div>
@@ -227,8 +226,10 @@ export default function StampSimulator() {
             style={{ opacity: isResetting || isLocked ? 0.65 : 1, cursor: isResetting || isLocked ? 'not-allowed' : 'pointer' }}
           >
             <span className="flex items-center justify-center gap-1">
-              {isResetting
+                {isResetting
                 ? <>Auto-resetting... <RotateCw size={16} className="animate-spin inline-block" /></>
+                : stamps === totalStamps
+                ? <>Get Offers! (New card locked) <Lock size={16} className="inline-block" /></>
                 : isLocked
                 ? <>Locked <Lock size={16} className="inline-block" /></>
                 : stamps === 0
