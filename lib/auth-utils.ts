@@ -1,28 +1,17 @@
-import { jwtVerify, createRemoteJWKSet } from 'jose';
-import { cookies } from 'next/headers';
-
-const jwksUrl = new URL(process.env.NEXT_PUBLIC_NEON_JWKS_URL || "");
-const JWKS = createRemoteJWKSet(jwksUrl);
+import { auth } from '@/lib/auth/server';
 
 export async function getSession() {
   try {
-    const cookieStore = await cookies();
-    // Better Auth default cookie name is better-auth.session_token
-    const sessionToken = cookieStore.get('better-auth.session_token')?.value || cookieStore.get('neon_auth_session')?.value;
-    
-    if (!sessionToken) return null;
-
-    const { payload } = await jwtVerify(sessionToken, JWKS, {
-      algorithms: ['RS256'],
-    });
+    const { data: session } = await auth.getSession();
+    if (!session?.user) return null;
 
     return {
-      id: payload.sub as string,
-      email: payload.email as string,
-      name: (payload.name as string) || '',
+      id: session.user.id as string,
+      email: session.user.email as string,
+      name: (session.user.name as string) || '',
     };
   } catch (error) {
-    console.error("Error getting/verifying Neon Auth session JWT:", error);
+    console.error('Error getting Neon Auth session:', error);
     return null;
   }
 }
