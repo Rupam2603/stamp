@@ -178,7 +178,7 @@ export default function StampSimulator() {
               }}
             >
               <div className="stamp-number">
-                {isReward ? '3RD CUP FREE!' : `BHAR #${index + 1}`}
+                {isReward ? 'Grab Your Offer' : `BHAR #${index + 1}`}
               </div>
               <div className="stamp-icon">
                 {isStamped ? (
