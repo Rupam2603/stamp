@@ -6,7 +6,6 @@ import Image from 'next/image';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 10 minutes = 600,000 ms
-const MIN_SPEND_RS = 50; // Minimum ₹50 spend per stamp
 
 const STORAGE_KEYS = {
   STAMPS: 'bhaar_moshai_loyalty_stamps',
@@ -20,7 +19,6 @@ export default function Loyalty() {
   const [lastStampTime, setLastStampTime] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
   const [isAutoResetting, setIsAutoResetting] = useState<boolean>(false);
-  const [orderSpend, setOrderSpend] = useState<number>(60);
   const [notification, setNotification] = useState<{ type: 'reward' | 'info' | 'warning'; text: string } | null>(null);
   const [hasMounted, setHasMounted] = useState<boolean>(false);
 
@@ -113,20 +111,11 @@ export default function Loyalty() {
   const handleAddStamp = () => {
     if (isAutoResetting) return;
 
-    // Check ₹50 minimum spend rule
-    if (orderSpend < MIN_SPEND_RS) {
-      setNotification({
-        type: 'warning',
-        text: `⚠️ Minimum Spend Rule: Your simulated order is ₹${orderSpend}. Every customer must spend at least ₹50 to get a stamp (Short by ₹${MIN_SPEND_RS - orderSpend}).`,
-      });
-      return;
-    }
-
     // Check 10-minute cooldown rule
     if (isLocked) {
       setNotification({
         type: 'warning',
-        text: `⏳ Cooldown active! Please wait ${formatTime(secondsRemaining)} or re-open the website after 10 minutes to collect your next stamp.`,
+        text: `⏳ Cooldown active! Please wait or re-open the website later to collect your next stamp.`,
       });
       return;
     }
@@ -149,7 +138,7 @@ export default function Loyalty() {
 
       setNotification({
         type: 'warning',
-        text: `🍵 Order ₹${orderSpend} Qualified! Stamp ${nextStamp} of 3 collected! 10-minute cooldown started. Re-open the website after 10 minutes for Stamp ${nextStamp + 1}!`,
+        text: `🍵 Qualified! Stamp ${nextStamp} of 3 collected! 10-minute cooldown started. Re-open the website after 10 minutes for Stamp ${nextStamp + 1}!`,
       });
     } else {
       // 3rd stamp collected -> all 3 collected!
@@ -534,69 +523,7 @@ export default function Loyalty() {
           </div>
         </div>
 
-        {/* ORDER SPEND SIMULATOR SELECTOR */}
-        <div style={{
-          background: 'rgba(0,0,0,0.3)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '16px',
-          padding: '14px 18px',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}>
-          <div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff' }}>
-              Simulate Counter Bill Spend:
-            </div>
-            <div style={{ fontSize: '0.76rem', color: '#94a3b8' }}>
-              Minimum ₹50 spend required to qualify for a stamp
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {[
-              { label: '₹35 (Under ₹50)', value: 35 },
-              { label: '₹60 (Eligible)', value: 60 },
-              { label: '₹120 (Eligible)', value: 120 },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setOrderSpend(opt.value)}
-                style={{
-                  background: orderSpend === opt.value ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.05)',
-                  border: orderSpend === opt.value ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
-                  color: orderSpend === opt.value ? '#fbbf24' : '#cbd5e1',
-                  borderRadius: '10px',
-                  padding: '6px 12px',
-                  fontSize: '0.76rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(12, 14, 18, 0.6)', borderRadius: '16px', padding: '14px 20px', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
-            {isLocked ? (
-              <span>
-                ⏳ Re-open website after <strong>{formatTime(secondsRemaining)}</strong> for next stamp
-              </span>
-            ) : orderSpend < MIN_SPEND_RS ? (
-              <span style={{ color: '#ea580c', fontWeight: 600 }}>
-                ⚠️ Bill is ₹{orderSpend} (Need ₹{MIN_SPEND_RS - orderSpend} more to reach ₹50 min)
-              </span>
-            ) : (
-              <span>Bill: <strong>₹{orderSpend}</strong> (Eligible for stamp!)</span>
-            )}
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(12, 14, 18, 0.6)', borderRadius: '16px', padding: '14px 20px', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button
               type="button"
@@ -611,9 +538,7 @@ export default function Loyalty() {
               {isAutoResetting
                 ? 'Card Auto-resetting... ↺'
                 : isLocked
-                ? `Locked: Wait ${formatTime(secondsRemaining)} ⏳`
-                : orderSpend < MIN_SPEND_RS
-                ? `Order Under ₹50 (Current: ₹${orderSpend})`
+                ? 'Locked ⏳'
                 : stamps === 0
                 ? 'Collect First Stamp 🍵'
                 : stamps < totalStamps

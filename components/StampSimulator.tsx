@@ -37,7 +37,7 @@ export default function StampSimulator() {
       const elapsed = Date.now() - lastStampTime;
       const remaining = Math.max(0, Math.ceil((COOLDOWN_MS - elapsed) / 1000));
       setSecondsRemaining(remaining);
-      
+
       if (remaining === 0 && stamps === totalStamps) {
         setStamps(0);
         setCompletedCards((prev) => prev + 1);
@@ -124,7 +124,6 @@ export default function StampSimulator() {
               BHAAR MOSHAI CLUB
             </div>
             <div style={{ fontSize: '0.75rem', color: '#f59e0b' }}>
-              ৩-ভাঁড় লয়ালটি পাস · Min ₹50 Spend / Stamp
             </div>
           </div>
         </div>
@@ -167,8 +166,8 @@ export default function StampSimulator() {
                 isStamped
                   ? `Stamp ${index + 1} collected!`
                   : isNextSlotLocked
-                  ? `Locked`
-                  : `Collect stamp ${index + 1} (Min ₹50 spend)`
+                    ? `Locked`
+                    : `Collect stamp ${index + 1} (Min ₹50 spend)`
               }
               style={{
                 cursor: isResetting || isLocked ? 'not-allowed' : 'pointer',
@@ -195,10 +194,10 @@ export default function StampSimulator() {
                     ? 'Free Chai!'
                     : 'Stamped'
                   : isNextSlotLocked
-                  ? `Locked`
-                  : isReward
-                  ? '3rd Reward'
-                  : 'Min ₹50'}
+                    ? `Locked`
+                    : isReward
+                      ? '3rd Reward'
+                      : 'Min ₹50'}
               </div>
             </div>
           );
@@ -226,17 +225,17 @@ export default function StampSimulator() {
             style={{ opacity: isResetting || isLocked ? 0.65 : 1, cursor: isResetting || isLocked ? 'not-allowed' : 'pointer' }}
           >
             <span className="flex items-center justify-center gap-1">
-                {isResetting
+              {isResetting
                 ? <>Auto-resetting... <RotateCw size={16} className="animate-spin inline-block" /></>
                 : stamps === totalStamps
-                ? <>Get Offers! (New card locked) <Lock size={16} className="inline-block" /></>
-                : isLocked
-                ? <>Locked <Lock size={16} className="inline-block" /></>
-                : stamps === 0
-                ? <>Tap to Stamp #1 <Coffee size={16} className="inline-block" /></>
-                : stamps < totalStamps
-                ? <>Tap for Stamp #{stamps + 1} <Coffee size={16} className="inline-block" /></>
-                : <>Card Complete! <Gift size={16} className="inline-block" /></>}
+                  ? <>Get Offers! (New card locked) <Lock size={16} className="inline-block" /></>
+                  : isLocked
+                    ? <>Locked <Lock size={16} className="inline-block" /></>
+                    : stamps === 0
+                      ? <>Tap to Stamp #1 <Coffee size={16} className="inline-block" /></>
+                      : stamps < totalStamps
+                        ? <>Tap for Stamp #{stamps + 1} <Coffee size={16} className="inline-block" /></>
+                        : <>Card Complete! <Gift size={16} className="inline-block" /></>}
             </span>
           </button>
 
