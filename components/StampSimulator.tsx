@@ -68,13 +68,7 @@ export default function StampSimulator() {
   const handleAddStamp = () => {
     if (isResetting) return;
 
-    if (simulatedSpend < MIN_SPEND_RS) {
-      setBanner({
-        type: 'warning',
-        text: <span className="flex items-center gap-1"><AlertTriangle size={16} className="inline-block" /> Minimum ₹50 spend required! Selected order is ₹{simulatedSpend}. Need ₹{MIN_SPEND_RS - simulatedSpend} more to qualify for a stamp.</span>,
-      });
-      return;
-    }
+
 
     if (isLocked) {
       setBanner({
@@ -197,90 +191,7 @@ export default function StampSimulator() {
         </div>
       </div>
 
-      {banner && (
-        <div
-          style={{
-            marginBottom: '16px',
-            padding: '10px 14px',
-            borderRadius: '12px',
-            fontSize: '0.84rem',
-            fontWeight: 600,
-            background:
-              banner.type === 'reward'
-                ? 'rgba(245, 158, 11, 0.18)'
-                : banner.type === 'warning'
-                ? 'rgba(234, 88, 12, 0.16)'
-                : 'rgba(56, 189, 248, 0.12)',
-            border:
-              banner.type === 'reward'
-                ? '1px solid #f59e0b'
-                : banner.type === 'warning'
-                ? '1px solid #ea580c'
-                : '1px solid rgba(56, 189, 248, 0.3)',
-            color:
-              banner.type === 'reward'
-                ? '#fbbf24'
-                : banner.type === 'warning'
-                ? '#fdba74'
-                : '#38bdf8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '8px',
-          }}
-        >
-          <span>{banner.text}</span>
-          {isResetting && (
-            <span style={{ fontSize: '0.75rem', color: '#4ade80', whiteSpace: 'nowrap' }}>
-              Auto-resetting...
-            </span>
-          )}
-        </div>
-      )}
 
-      {/* SIMULATED ORDER SPEND SELECTOR */}
-      <div style={{
-        background: 'rgba(0,0,0,0.3)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '12px',
-        padding: '10px 14px',
-        marginBottom: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '8px',
-      }}>
-        <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
-          Simulate Order Spend: <strong style={{ color: simulatedSpend >= 50 ? '#4ade80' : '#ea580c' }}>₹{simulatedSpend}</strong>
-          {simulatedSpend >= 50 ? ' (Eligible)' : ' (Under ₹50 Min)'}
-        </div>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {[
-            { label: '₹35', value: 35 },
-            { label: '₹60', value: 60 },
-            { label: '₹120', value: 120 },
-          ].map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setSimulatedSpend(item.value)}
-              style={{
-                background: simulatedSpend === item.value ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.05)',
-                border: simulatedSpend === item.value ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
-                color: simulatedSpend === item.value ? '#fbbf24' : '#cbd5e1',
-                borderRadius: '8px',
-                padding: '4px 10px',
-                fontSize: '0.74rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="stamp-grid">
         {Array.from({ length: totalStamps }).map((_, index) => {
@@ -343,11 +254,7 @@ export default function StampSimulator() {
               <Hourglass size={14} className="inline-block" /> Next stamp unlocks in {formatTime(secondsRemaining)} (Re-open website after 10 mins)
             </span>
           )}
-          {simulatedSpend < MIN_SPEND_RS && !isLocked && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              <AlertTriangle size={14} className="inline-block" /> Min ₹50 order required (Need ₹{MIN_SPEND_RS - simulatedSpend} more)
-            </span>
-          )}
+
           {stamps === totalStamps && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
               <CheckCircle2 size={14} className="inline-block" /> All 3 Collected! Card automatically resetting for round {completedCards + 2}...
@@ -368,8 +275,6 @@ export default function StampSimulator() {
                 ? <>Auto-resetting... <RotateCw size={16} className="animate-spin inline-block" /></>
                 : isLocked
                 ? <>Wait {formatTime(secondsRemaining)} <Hourglass size={16} className="inline-block" /></>
-                : simulatedSpend < MIN_SPEND_RS
-                ? `Bill Under ₹50 (₹${simulatedSpend})`
                 : stamps === 0
                 ? <>Tap to Stamp #1 <Coffee size={16} className="inline-block" /></>
                 : stamps < totalStamps
