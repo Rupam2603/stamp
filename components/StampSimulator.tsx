@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
@@ -14,8 +15,9 @@ export default function StampSimulator() {
   const [lastStampTime, setLastStampTime] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
   const [isResetting, setIsResetting] = useState<boolean>(false);
+  const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
   const [simulatedSpend, setSimulatedSpend] = useState<number>(60);
-  const [banner, setBanner] = useState<{ text: string; type: 'reward' | 'info' | 'warning' } | null>(null);
+  const [banner, setBanner] = useState<{ text: React.ReactNode; type: 'reward' | 'info' | 'warning' } | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const totalStamps = 3;
@@ -44,7 +46,7 @@ export default function StampSimulator() {
           if (prev?.type === 'warning') {
             return {
               type: 'info',
-              text: '✨ 10 minutes have passed! You can now collect your next stamp with a ₹50+ order.',
+              text: <span className="flex items-center gap-1"><Sparkles size={16} className="inline-block" /> 10 minutes have passed! You can now collect your next stamp with a ₹50+ order.</span>,
             };
           }
           return prev;
@@ -69,7 +71,7 @@ export default function StampSimulator() {
     if (simulatedSpend < MIN_SPEND_RS) {
       setBanner({
         type: 'warning',
-        text: `⚠️ Minimum ₹50 spend required! Selected order is ₹${simulatedSpend}. Need ₹${MIN_SPEND_RS - simulatedSpend} more to qualify for a stamp.`,
+        text: <span className="flex items-center gap-1"><AlertTriangle size={16} className="inline-block" /> Minimum ₹50 spend required! Selected order is ₹{simulatedSpend}. Need ₹{MIN_SPEND_RS - simulatedSpend} more to qualify for a stamp.</span>,
       });
       return;
     }
@@ -77,7 +79,7 @@ export default function StampSimulator() {
     if (isLocked) {
       setBanner({
         type: 'warning',
-        text: `⏳ 10-Minute Adda Rule: Please wait ${formatTime(secondsRemaining)} or re-open the website after 10 minutes to collect your next stamp.`,
+        text: <span className="flex items-center gap-1"><Hourglass size={16} className="inline-block" /> 10-Minute Adda Rule: Please wait {formatTime(secondsRemaining)} or re-open the website after 10 minutes to collect your next stamp.</span>,
       });
       return;
     }
@@ -87,21 +89,25 @@ export default function StampSimulator() {
 
     if (nextStamp < totalStamps) {
       setStamps(nextStamp);
+      setAnimatingIndex(stamps);
+      setTimeout(() => setAnimatingIndex(null), 600);
       setLastStampTime(now);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
       setBanner({
         type: 'warning',
-        text: `🍵 Order ₹${simulatedSpend} Qualified! Stamp ${nextStamp} of ${totalStamps} collected! 10-minute wait required. Re-open website after 10 mins!`,
+        text: <span className="flex items-center gap-1"><Coffee size={16} className="inline-block" /> Order ₹{simulatedSpend} Qualified! Stamp {nextStamp} of {totalStamps} collected! 10-minute wait required. Re-open website after 10 mins!</span>,
       });
     } else {
       // 3rd stamp collected -> all 3 collected!
       setStamps(3);
+      setAnimatingIndex(stamps);
+      setTimeout(() => setAnimatingIndex(null), 600);
       setLastStampTime(null);
       setSecondsRemaining(0);
       setIsResetting(true);
       setBanner({
         type: 'reward',
-        text: '🎉 Congratulations! All 3 stamps collected! 1 Free Bhar Chai unlocked! Card is automatically resetting...',
+        text: <span className="flex items-center gap-1"><PartyPopper size={16} className="inline-block" /> Congratulations! All 3 stamps collected! 1 Free Bhar Chai unlocked! Card is automatically resetting...</span>,
       });
 
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -111,7 +117,7 @@ export default function StampSimulator() {
         setIsResetting(false);
         setBanner({
           type: 'info',
-          text: '↺ Card automatically reset! Ready for your next 3-stamp chai cycle.',
+          text: <span className="flex items-center gap-1"><RotateCw size={16} className="inline-block" /> Card automatically reset! Ready for your next 3-stamp chai cycle.</span>,
         });
         setTimeout(() => setBanner(null), 3500);
       }, 2200);
@@ -123,7 +129,7 @@ export default function StampSimulator() {
     setSecondsRemaining(0);
     setBanner({
       type: 'info',
-      text: '⚡ [Demo] Fast-forwarded 10 minutes! Stamp unlocked.',
+      text: <span className="flex items-center gap-1"><Zap size={16} className="inline-block" /> [Demo] Fast-forwarded 10 minutes! Stamp unlocked.</span>,
     });
   };
 
@@ -138,6 +144,18 @@ export default function StampSimulator() {
 
   return (
     <div className="demo-card-container">
+      <style>{`
+        @keyframes stampDrop {
+          0% { transform: scale(3) rotate(-30deg); opacity: 0; }
+          40% { transform: scale(0.8) rotate(10deg); opacity: 1; }
+          70% { transform: scale(1.1) rotate(-5deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        .stamp-animate {
+          animation: stampDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          color: #f59e0b;
+        }
+      `}</style>
       <div className="demo-card-header">
         <div className="demo-card-brand">
           <div className="demo-logo-mini">
@@ -170,11 +188,11 @@ export default function StampSimulator() {
                 borderRadius: '999px',
               }}
             >
-              🏆 {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Won!
+              <span className="flex items-center gap-1"><Trophy size={14} className="inline-block" /> {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Won!</span>
             </span>
           )}
-          <span className="demo-member-badge">
-            {isLocked ? `⏳ LOCKED (${formatTime(secondsRemaining)})` : stamps === totalStamps ? '🎉 3/3 COLLECTED!' : 'GOLD ADDA MEMBER'}
+          <span className="demo-member-badge flex items-center gap-1">
+            {isLocked ? <><Hourglass size={14} className="inline-block" /> LOCKED ({formatTime(secondsRemaining)})</> : stamps === totalStamps ? <><PartyPopper size={14} className="inline-block" /> 3/3 COLLECTED!</> : 'GOLD ADDA MEMBER'}
           </span>
         </div>
       </div>
@@ -294,11 +312,11 @@ export default function StampSimulator() {
               </div>
               <div className="stamp-icon">
                 {isStamped ? (
-                  isReward ? '🎁' : '🍵'
+                  isReward ? <Gift size={28} className={animatingIndex === index ? 'stamp-animate' : ''} /> : <Coffee size={28} className={animatingIndex === index ? 'stamp-animate' : ''} />
                 ) : isNextSlotLocked ? (
-                  '🔒'
+                  <Lock size={28} />
                 ) : (
-                  isReward ? '✨' : '○'
+                  isReward ? <Sparkles size={28} /> : <Circle size={28} />
                 )}
               </div>
               <div style={{ fontSize: '0.7rem', color: isStamped ? '#f59e0b' : isNextSlotLocked ? '#ea580c' : '#64748b', fontWeight: 600 }}>
@@ -321,18 +339,18 @@ export default function StampSimulator() {
         <div className="stamp-counter-text">
           Progress: <strong>{stamps}</strong> of <strong>{totalStamps}</strong> stamps
           {isLocked && (
-            <span style={{ display: 'block', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              ⏳ Next stamp unlocks in {formatTime(secondsRemaining)} (Re-open website after 10 mins)
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
+              <Hourglass size={14} className="inline-block" /> Next stamp unlocks in {formatTime(secondsRemaining)} (Re-open website after 10 mins)
             </span>
           )}
           {simulatedSpend < MIN_SPEND_RS && !isLocked && (
-            <span style={{ display: 'block', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              ⚠️ Min ₹50 order required (Need ₹{MIN_SPEND_RS - simulatedSpend} more)
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
+              <AlertTriangle size={14} className="inline-block" /> Min ₹50 order required (Need ₹{MIN_SPEND_RS - simulatedSpend} more)
             </span>
           )}
           {stamps === totalStamps && (
-            <span style={{ display: 'block', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              ✓ All 3 Collected! Card automatically resetting for round {completedCards + 2}...
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
+              <CheckCircle2 size={14} className="inline-block" /> All 3 Collected! Card automatically resetting for round {completedCards + 2}...
             </span>
           )}
         </div>
@@ -345,17 +363,19 @@ export default function StampSimulator() {
             disabled={isResetting || isLocked}
             style={{ opacity: isResetting || isLocked ? 0.65 : 1, cursor: isResetting || isLocked ? 'not-allowed' : 'pointer' }}
           >
-            {isResetting
-              ? 'Auto-resetting... ↺'
-              : isLocked
-              ? `Wait ${formatTime(secondsRemaining)} ⏳`
-              : simulatedSpend < MIN_SPEND_RS
-              ? `Bill Under ₹50 (₹${simulatedSpend})`
-              : stamps === 0
-              ? 'Tap to Stamp #1 🍵'
-              : stamps < totalStamps
-              ? `Tap for Stamp #${stamps + 1} 🍵`
-              : 'Card Complete! 🎁'}
+            <span className="flex items-center justify-center gap-1">
+              {isResetting
+                ? <>Auto-resetting... <RotateCw size={16} className="animate-spin inline-block" /></>
+                : isLocked
+                ? <>Wait {formatTime(secondsRemaining)} <Hourglass size={16} className="inline-block" /></>
+                : simulatedSpend < MIN_SPEND_RS
+                ? `Bill Under ₹50 (₹${simulatedSpend})`
+                : stamps === 0
+                ? <>Tap to Stamp #1 <Coffee size={16} className="inline-block" /></>
+                : stamps < totalStamps
+                ? <>Tap for Stamp #{stamps + 1} <Coffee size={16} className="inline-block" /></>
+                : <>Card Complete! <Gift size={16} className="inline-block" /></>}
+            </span>
           </button>
 
           {isLocked && (
@@ -374,7 +394,7 @@ export default function StampSimulator() {
               }}
               title="Fast forward 10 minutes to test collecting next stamp"
             >
-              ⚡ Skip 10m
+              <span className="flex items-center justify-center gap-1"><Zap size={14} className="inline-block" /> Skip 10m</span>
             </button>
           )}
 

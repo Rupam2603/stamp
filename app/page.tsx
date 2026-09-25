@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import StampSimulator from '../components/StampSimulator';
+import { Coffee, Sparkles, Clock, Gift, Cookie, Smartphone, Sunset, Croissant, Sandwich } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -25,30 +26,30 @@ export default function Home() {
 
             <div className="hero-cta-group">
               <Link className="btn-primary" href="/activate">
-                <span>🍵</span>
+                <Coffee size={18} />
                 <span>Activate Your Digital Card</span>
               </Link>
               <Link className="btn-secondary" href="/offers">
-                <span>✨</span>
+                <Sparkles size={18} />
                 <span>Explore Adda Offers</span>
               </Link>
             </div>
 
             <div className="hero-perks">
               <div className="perk-item">
-                <div className="perk-icon-wrap">⏰</div>
+                <div className="perk-icon-wrap"><Clock size={20} /></div>
                 <span>Sun – Sat: 5 PM – 11 PM</span>
               </div>
               <div className="perk-item">
-                <div className="perk-icon-wrap">☕</div>
+                <div className="perk-icon-wrap"><Coffee size={20} /></div>
                 <span>Min ₹50 = 1 Stamp</span>
               </div>
               <div className="perk-item">
-                <div className="perk-icon-wrap">🎁</div>
+                <div className="perk-icon-wrap"><Gift size={20} /></div>
                 <span>Get exiting Offers on 3rd visit</span>
               </div>
               <div className="perk-item">
-                <div className="perk-icon-wrap">🍪</div>
+                <div className="perk-icon-wrap"><Cookie size={20} /></div>
                 <span>Surprise Snack Drops</span>
               </div>
             </div>
@@ -100,7 +101,7 @@ export default function Home() {
 
         <div className="feature-grid">
           <div className="feature-card">
-            <div className="feature-icon-badge">🏺</div>
+            <div className="feature-icon-badge"><Coffee size={28} /></div>
             <h3 className="feature-title">Authentic Clay Cups</h3>
             <div className="feature-bengali-label">মাটির খাঁটি ভাঁড়ের সোঁদা গন্ধ</div>
             <p className="feature-desc">
@@ -109,7 +110,7 @@ export default function Home() {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon-badge">📲</div>
+            <div className="feature-icon-badge"><Smartphone size={28} /></div>
             <h3 className="feature-title">Digital Stamp Pass</h3>
             <div className="feature-bengali-label">ফোন নম্বর বললেই স্ট্যাম্প যোগ</div>
             <p className="feature-desc">
@@ -118,7 +119,7 @@ export default function Home() {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon-badge">🍪</div>
+            <div className="feature-icon-badge"><Cookie size={28} /></div>
             <h3 className="feature-title">Edible Tea Cups</h3>
             <div className="feature-bengali-label">বিস্কুটের চায়ের কাপ</div>
             <p className="feature-desc">
@@ -127,7 +128,7 @@ export default function Home() {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon-badge">🌆</div>
+            <div className="feature-icon-badge"><Sunset size={28} /></div>
             <h3 className="feature-title">Evening Adda Perks</h3>
             <div className="feature-bengali-label">সন্ধ্যার আড্ডায় স্পেশাল মেম্বার ডিসকাউন্ট</div>
             <p className="feature-desc">
@@ -150,7 +151,7 @@ export default function Home() {
         <div className="feature-grid">
           <div className="feature-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem' }}>☕</span>
+              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Coffee size={32} /></span>
               <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
                 1 STAMP
               </span>
@@ -164,7 +165,7 @@ export default function Home() {
 
           <div className="feature-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem' }}>🍵</span>
+              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Coffee size={32} /></span>
               <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
                 1 STAMP
               </span>
@@ -178,7 +179,7 @@ export default function Home() {
 
           <div className="feature-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem' }}>🥟</span>
+              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Croissant size={32} /></span>
               <span style={{ background: 'rgba(217,83,41,0.15)', color: '#d95329', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
                 2 STAMPS
               </span>
@@ -192,7 +193,7 @@ export default function Home() {
 
           <div className="feature-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem' }}>🍞</span>
+              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Sandwich size={32} /></span>
               <span style={{ background: 'rgba(217,83,41,0.15)', color: '#d95329', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
                 2 STAMPS
               </span>
@@ -256,7 +257,10 @@ export default function Home() {
           }}
         >
           <div style={{ maxWidth: 640, margin: '0 auto' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🍵✨</div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', color: '#f59e0b', marginBottom: 12 }}>
+              <Coffee size={40} />
+              <Sparkles size={40} />
+            </div>
             <h2 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', color: '#ffffff', fontWeight: 900, margin: '0 0 16px' }}>
               Ready for Your Next Cup of Bhar Chai?
             </h2>
