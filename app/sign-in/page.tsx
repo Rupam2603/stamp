@@ -24,7 +24,7 @@ export default function SignInPage() {
       router.push('/activate');
     } catch (err) {
       console.error("Firebase Sign In Error:", err);
-      setError(err instanceof FirebaseError ? friendlyError(err.code) : 'Sign in failed. Please try again.');
+      setError(err instanceof FirebaseError ? friendlyError(err.code) : `Error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -122,6 +122,6 @@ function friendlyError(code: string): string {
     case 'auth/unauthorized-domain': return 'This domain is not authorized for Google sign-in. Please contact support.';
     case 'auth/operation-not-allowed': return 'Google sign-in is not enabled. Please contact support.';
     case 'auth/network-request-failed': return 'Network error. Please check your connection and try again.';
-    default: return 'Sign in failed. Please check your details and try again.';
+    default: return `Sign in failed. (${code})`;
   }
 }
