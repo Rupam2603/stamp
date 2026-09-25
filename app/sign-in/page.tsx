@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,13 +8,20 @@ import { useAuth } from '@/lib/auth-context';
 import { FirebaseError } from 'firebase/app';
 
 export default function SignInPage() {
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail, signInWithGoogle, isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirect once signed in (catches both email and Google redirect result)
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/activate');
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,13 +41,13 @@ export default function SignInPage() {
     setError(null);
     setGoogleLoading(true);
     try {
+      // signInWithRedirect navigates away — user returns signed in
       await signInWithGoogle();
-      router.push('/activate');
     } catch (err) {
-      setError(err instanceof FirebaseError ? friendlyError(err.code) : 'Google sign in failed.');
-    } finally {
       setGoogleLoading(false);
+      setError(err instanceof FirebaseError ? friendlyError(err.code) : 'Google sign in failed.');
     }
+    // Don't set googleLoading false here — page is navigating away
   };
 
   return (
@@ -111,6 +118,9 @@ function friendlyError(code: string): string {
     case 'auth/wrong-password': return 'Incorrect password. Please try again.';
     case 'auth/too-many-requests': return 'Too many failed attempts. Please try again later.';
     case 'auth/popup-closed-by-user': return 'Google sign-in was cancelled.';
+    case 'auth/unauthorized-domain': return 'This domain is not authorized for Google sign-in. Please contact support.';
+    case 'auth/operation-not-allowed': return 'Google sign-in is not enabled. Please contact support.';
+    case 'auth/network-request-failed': return 'Network error. Please check your connection and try again.';
     default: return 'Sign in failed. Please check your details and try again.';
   }
 }
