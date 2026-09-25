@@ -204,18 +204,7 @@ export default function StampSimulator() {
         })}
       </div>
 
-      <div className="stamp-action-bar">
-        <div className="stamp-counter-text">
-          Progress: <strong>{stamps}</strong> of <strong>{totalStamps}</strong> stamps
-
-
-          {stamps === totalStamps && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              <CheckCircle2 size={14} className="inline-block" /> Get offers! New card available soon.
-            </span>
-          )}
-        </div>
-
+      <div className="stamp-action-bar" style={{ justifyContent: 'center' }}>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             type="button"

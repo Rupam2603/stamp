@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 10 minutes = 600,000 ms
@@ -314,87 +315,7 @@ export default function Loyalty() {
         </div>
       )}
 
-      {/* COOLDOWN CARD CALLOUT IF LOCKED */}
-      {isLocked && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(217, 83, 41, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%)',
-            border: '1px solid rgba(245, 158, 11, 0.35)',
-            borderRadius: '20px',
-            padding: '18px 22px',
-            marginBottom: '26px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '14px',
-                background: 'rgba(217, 83, 41, 0.25)',
-                border: '1px solid #d95329',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.4rem',
-              }}
-            >
-              ⏳
-            </div>
-            <div>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff' }}>
-                10-Minute Adda Pause in Progress
-              </div>
-              <div style={{ fontSize: '0.84rem', color: '#cbd5e1', marginTop: '2px' }}>
-                Enjoy your hot clay-cup chai! Re-open or refresh the website once the 10 minutes pass to stamp your next ₹50+ cup.
-              </div>
-            </div>
-          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                background: '#0c0e12',
-                border: '1px solid #f59e0b',
-                padding: '8px 18px',
-                borderRadius: '12px',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.05em' }}>
-                NEXT STAMP IN
-              </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 900, color: '#f59e0b', fontFamily: 'monospace' }}>
-                {formatTime(secondsRemaining)}
-              </div>
-            </div>
-
-            {/* DEMO FAST FORWARD */}
-            <button
-              type="button"
-              onClick={handleFastForwardDemo}
-              style={{
-                background: 'rgba(245, 158, 11, 0.12)',
-                border: '1px dashed #f59e0b',
-                color: '#fbbf24',
-                padding: '10px 14px',
-                borderRadius: '12px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-              title="Skip the 10-minute wait to test the next stamp"
-            >
-              ⚡ Fast-Forward 10m (Demo)
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* VIRTUAL MEMBERSHIP CARD */}
       <div
@@ -439,9 +360,11 @@ export default function Loyalty() {
                 fontWeight: 800,
                 padding: '6px 14px',
                 borderRadius: '999px',
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}>
-                🏆 {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Completed
+                <Trophy size={16} /> {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Completed
               </span>
             )}
             <span style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid var(--border-highlight)', color: '#fbbf24', fontSize: '0.82rem', fontWeight: 700, padding: '6px 14px', borderRadius: '999px', display: 'inline-block' }}>
@@ -452,20 +375,7 @@ export default function Loyalty() {
 
         {/* STAMP SLOTS */}
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>
-              Clay Cup Progress: <span style={{ color: '#fbbf24' }}>{stamps} / {totalStamps} Stamps</span>
-            </span>
-            <span style={{ fontSize: '0.82rem', color: isLocked ? '#fdba74' : stamps === totalStamps ? '#fbbf24' : '#4ade80', fontWeight: 600 }}>
-              {isLocked
-                ? `⏳ Next stamp unlocks in ${formatTime(secondsRemaining)}`
-                : stamps === totalStamps
-                ? '🎉 3/3 Complete! Card automatically resetting...'
-                : stamps === 0
-                ? 'Ready to collect Cup #1 (Min ₹50 spend)'
-                : `${totalStamps - stamps} more stamp for a Free Bhar!`}
-            </span>
-          </div>
+
 
           <div className="stamp-grid">
             {Array.from({ length: totalStamps }).map((_, i) => {
@@ -495,24 +405,24 @@ export default function Loyalty() {
                   }
                 >
                   <span className="stamp-number">
-                    {isReward ? '3RD CUP FREE!' : `CUP #${i + 1}`}
+                    {isReward ? 'Grab Your Offer' : `CUP #${i + 1}`}
                   </span>
-                  <span className="stamp-icon">
+                  <span className="stamp-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isStamped ? (
-                      isReward ? '🎁' : '🍵'
+                      isReward ? <Gift size={32} /> : <Coffee size={32} />
                     ) : isNextSlotLocked ? (
-                      '🔒'
+                      <Lock size={32} />
                     ) : (
-                      isReward ? '✨' : '○'
+                      isReward ? <Sparkles size={32} /> : <Circle size={32} />
                     )}
                   </span>
                   <span style={{ fontSize: '0.72rem', color: isStamped ? '#f59e0b' : isNextSlotLocked ? '#ea580c' : '#64748b', fontWeight: 600 }}>
                     {isStamped
                       ? isReward
-                        ? 'Free Chai!'
+                        ? 'Reward Unlocked!'
                         : 'Stamped'
                       : isNextSlotLocked
-                      ? `Wait ${formatTime(secondsRemaining)}`
+                      ? `Locked`
                       : isReward
                       ? '3rd Reward'
                       : 'Min ₹50'}
@@ -536,35 +446,17 @@ export default function Loyalty() {
               }}
             >
               {isAutoResetting
-                ? 'Card Auto-resetting... ↺'
+                ? 'Card Auto-resetting...'
                 : isLocked
-                ? 'Locked ⏳'
+                ? 'Locked'
                 : stamps === 0
-                ? 'Collect First Stamp 🍵'
+                ? 'Collect First Stamp'
                 : stamps < totalStamps
-                ? `Collect Stamp #${stamps + 1} 🍵`
+                ? `Collect Stamp #${stamps + 1}`
                 : '3/3 Collected! Resetting...'}
             </button>
 
-            {isLocked && (
-              <button
-                type="button"
-                onClick={handleFastForwardDemo}
-                style={{
-                  background: 'rgba(245, 158, 11, 0.1)',
-                  border: '1px solid #f59e0b',
-                  color: '#fbbf24',
-                  borderRadius: '999px',
-                  padding: '8px 14px',
-                  fontSize: '0.78rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-                title="Fast forward 10 minutes to test collecting next stamp"
-              >
-                ⚡ Skip 10m (Demo)
-              </button>
-            )}
+
 
             {stamps > 0 && !isAutoResetting && (
               <button
