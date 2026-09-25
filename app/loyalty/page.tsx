@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 10 minutes = 600,000 ms
@@ -20,26 +24,53 @@ export default function Loyalty() {
   const [lastStampTime, setLastStampTime] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
   const [isAutoResetting, setIsAutoResetting] = useState<boolean>(false);
+  const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
   const [notification, setNotification] = useState<{ type: 'reward' | 'info' | 'warning'; text: string } | null>(null);
   const [hasMounted, setHasMounted] = useState<boolean>(false);
+  const { user, isLoaded } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/sign-in');
+    }
+  }, [user, isLoaded, router]);
 
   const totalStamps = 3;
   const resetTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize from localStorage on browser mount / re-open
+  // Initialize from Firestore or localStorage
   useEffect(() => {
-    try {
-      const savedStamps = parseInt(localStorage.getItem(STORAGE_KEYS.STAMPS) || '0', 10);
-      const savedTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_TIME) || '0', 10);
-      const savedCards = parseInt(localStorage.getItem(STORAGE_KEYS.COMPLETED) || '0', 10);
+    if (!isLoaded) return;
 
-      const validStamps = isNaN(savedStamps) ? 0 : Math.min(3, Math.max(0, savedStamps));
-      const validTime = isNaN(savedTime) || savedTime <= 0 ? null : savedTime;
-      const validCards = isNaN(savedCards) ? 0 : Math.max(0, savedCards);
+    const loadData = async () => {
+      try {
+        let validStamps = 0;
+        let validTime: number | null = null;
+        let validCards = 0;
 
-      setStamps(validStamps);
-      setCompletedCards(validCards);
-      setLastStampTime(validTime);
+        if (user) {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            validStamps = typeof data.stamps === 'number' ? data.stamps : 0;
+            validTime = typeof data.lastStampTime === 'number' && data.lastStampTime > 0 ? data.lastStampTime : null;
+            validCards = typeof data.completedCards === 'number' ? data.completedCards : 0;
+          }
+        } else {
+          const savedStamps = parseInt(localStorage.getItem(STORAGE_KEYS.STAMPS) || '0', 10);
+          const savedTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_TIME) || '0', 10);
+          const savedCards = parseInt(localStorage.getItem(STORAGE_KEYS.COMPLETED) || '0', 10);
+
+          validStamps = isNaN(savedStamps) ? 0 : Math.min(3, Math.max(0, savedStamps));
+          validTime = isNaN(savedTime) || savedTime <= 0 ? null : savedTime;
+          validCards = isNaN(savedCards) ? 0 : Math.max(0, savedCards);
+        }
+
+        setStamps(validStamps);
+        setCompletedCards(validCards);
+        setLastStampTime(validTime);
 
       if (validTime && validStamps > 0 && validStamps < totalStamps) {
         const elapsed = Date.now() - validTime;
@@ -49,7 +80,7 @@ export default function Loyalty() {
         if (remaining > 0) {
           setNotification({
             type: 'warning',
-            text: `⏳ 10-Minute Adda Rule: Stamp ${validStamps} was collected earlier. Please wait ${formatTime(remaining)} or re-open the website after 10 minutes to collect Stamp ${validStamps + 1}.`,
+            text: `⏳ 10-Minute Adda Rule: Please wait a few minutes before collecting your next stamp.`,
           });
         } else {
           setNotification({
@@ -58,15 +89,17 @@ export default function Loyalty() {
           });
         }
       }
-    } catch (e) {
-      console.error('Error loading loyalty storage', e);
-    }
-    setHasMounted(true);
-  }, []);
+      } catch (e) {
+        console.error('Error loading loyalty storage', e);
+      }
+      setHasMounted(true);
+    };
+    loadData();
+  }, [user, isLoaded]);
 
   // Live countdown timer ticking every 1 second
   useEffect(() => {
-    if (!lastStampTime || stamps === 0 || stamps >= totalStamps) {
+    if (!lastStampTime || stamps === 0) {
       setSecondsRemaining(0);
       return;
     }
@@ -77,20 +110,46 @@ export default function Loyalty() {
       setSecondsRemaining(remaining);
 
       if (remaining === 0) {
-        setNotification((prev) => {
-          if (prev?.type === 'warning') {
-            return {
-              type: 'info',
-              text: '✨ 10 minutes have passed! Your next stamp is now ready to collect with a ₹50+ order.',
-            };
+        if (stamps === totalStamps) {
+          // Time to auto-reset the card!
+          const nextCompleted = completedCards + 1;
+          setStamps(0);
+          setCompletedCards(nextCompleted);
+          setLastStampTime(null);
+          
+          try {
+            if (user) {
+              const docRef = doc(db, 'users', user.uid);
+              updateDoc(docRef, { stamps: 0, lastStampTime: null, completedCards: nextCompleted }).catch(console.error);
+            }
+            localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
+            localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
+            localStorage.setItem(STORAGE_KEYS.COMPLETED, String(nextCompleted));
+          } catch (e) {
+            console.error(e);
           }
-          return prev;
-        });
+
+          setNotification({
+            type: 'info',
+            text: `↺ Card automatically reset! Ready for Round ${nextCompleted + 1}. Spend min ₹50 on your next 3 orders to earn another free treat!`,
+          });
+          setTimeout(() => setNotification(null), 5000);
+        } else {
+          setNotification((prev) => {
+            if (prev?.type === 'warning') {
+              return {
+                type: 'info',
+                text: '✨ 10 minutes have passed! Your next stamp is now ready to collect with a ₹50+ order.',
+              };
+            }
+            return prev;
+          });
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastStampTime, stamps]);
+  }, [lastStampTime, stamps, completedCards, user]);
 
   // Clean up auto-reset timer on unmount
   useEffect(() => {
@@ -99,11 +158,9 @@ export default function Loyalty() {
     };
   }, []);
 
-  // Format seconds to mm:ss
+  // Remove formatTime as timer is hidden
   const formatTime = (totalSecs: number) => {
-    const mins = Math.floor(totalSecs / 60);
-    const secs = totalSecs % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return "";
   };
 
   const isLocked = secondsRemaining > 0 && stamps > 0 && stamps < totalStamps;
@@ -127,10 +184,16 @@ export default function Loyalty() {
     if (nextStamp < totalStamps) {
       // Stamp 1 or 2 collected -> lock for 10 minutes!
       setStamps(nextStamp);
+      setAnimatingIndex(stamps);
+      setTimeout(() => setAnimatingIndex(null), 600);
       setLastStampTime(now);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
 
       try {
+        if (user) {
+          const docRef = doc(db, 'users', user.uid);
+          updateDoc(docRef, { stamps: nextStamp, lastStampTime: now }).catch(console.error);
+        }
         localStorage.setItem(STORAGE_KEYS.STAMPS, String(nextStamp));
         localStorage.setItem(STORAGE_KEYS.LAST_TIME, String(now));
       } catch (e) {
@@ -142,38 +205,32 @@ export default function Loyalty() {
         text: `🍵 Qualified! Stamp ${nextStamp} of 3 collected! 10-minute cooldown started. Re-open the website after 10 minutes for Stamp ${nextStamp + 1}!`,
       });
     } else {
-      // 3rd stamp collected -> all 3 collected!
+      // 3rd stamp collected -> wait 10 mins before new card
       setStamps(3);
-      setLastStampTime(null);
-      setSecondsRemaining(0);
-      setIsAutoResetting(true);
+      setAnimatingIndex(stamps);
+      setTimeout(() => setAnimatingIndex(null), 600);
+      setLastStampTime(now);
+      setSecondsRemaining(COOLDOWN_MINUTES * 60);
+      setIsAutoResetting(false);
 
       setNotification({
         type: 'reward',
-        text: '🎉 Congratulations! All 3 stamps collected! 1 Free Special Bhar Chai unlocked! Card is automatically resetting for your next rewards...',
+        text: '🎉 Congratulations! Grab Your Offer! New card will be available after 10 minutes.',
       });
-
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-      resetTimerRef.current = setTimeout(() => {
-        const nextCompleted = completedCards + 1;
-        setStamps(0);
-        setCompletedCards(nextCompleted);
-        setIsAutoResetting(false);
-
-        try {
-          localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
-          localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
-          localStorage.setItem(STORAGE_KEYS.COMPLETED, String(nextCompleted));
-        } catch (e) {
-          console.error(e);
+      
+      try {
+        if (user) {
+          const docRef = doc(db, 'users', user.uid);
+          updateDoc(docRef, { stamps: 3, lastStampTime: now }).catch(console.error);
         }
+        localStorage.setItem(STORAGE_KEYS.STAMPS, '3');
+        localStorage.setItem(STORAGE_KEYS.LAST_TIME, String(now));
+      } catch (e) {
+        console.error(e);
+      }
 
-        setNotification({
-          type: 'info',
-          text: `↺ Card automatically reset! Ready for Round ${nextCompleted + 1}. Spend min ₹50 on your next 3 orders to earn another free treat!`,
-        });
-        setTimeout(() => setNotification(null), 5000);
-      }, 2500);
+      // No auto reset, just wait 10 mins. It will naturally reset when timer expires (handled in useEffect)
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     }
   };
 
@@ -201,6 +258,10 @@ export default function Loyalty() {
     setSecondsRemaining(0);
     setIsAutoResetting(false);
     try {
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        updateDoc(docRef, { stamps: 0, lastStampTime: null }).catch(console.error);
+      }
       localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
       localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
     } catch (e) {
@@ -318,6 +379,18 @@ export default function Loyalty() {
 
 
       {/* VIRTUAL MEMBERSHIP CARD */}
+      <style>{`
+        @keyframes stampDrop {
+          0% { transform: scale(3) rotate(-30deg); opacity: 0; }
+          40% { transform: scale(0.8) rotate(10deg); opacity: 1; }
+          70% { transform: scale(1.1) rotate(-5deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        .stamp-animate {
+          animation: stampDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          color: #f59e0b;
+        }
+      `}</style>
       <div
         style={{
           background: 'linear-gradient(135deg, #242938 0%, #151824 50%, #0f1118 100%)',
@@ -400,7 +473,7 @@ export default function Loyalty() {
                     isStamped
                       ? `Stamp ${i + 1} collected!`
                       : isNextSlotLocked
-                      ? `Locked: wait ${formatTime(secondsRemaining)}`
+                      ? `Locked: wait 10 minutes`
                       : `Collect stamp ${i + 1} (Min ₹50 spend)`
                   }
                 >
@@ -409,7 +482,7 @@ export default function Loyalty() {
                   </span>
                   <span className="stamp-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isStamped ? (
-                      isReward ? <Gift size={32} /> : <Coffee size={32} />
+                      isReward ? <Gift size={32} className={animatingIndex === i ? 'stamp-animate' : ''} /> : <Coffee size={32} className={animatingIndex === i ? 'stamp-animate' : ''} />
                     ) : isNextSlotLocked ? (
                       <Lock size={32} />
                     ) : (
@@ -419,7 +492,7 @@ export default function Loyalty() {
                   <span style={{ fontSize: '0.72rem', color: isStamped ? '#f59e0b' : isNextSlotLocked ? '#ea580c' : '#64748b', fontWeight: 600 }}>
                     {isStamped
                       ? isReward
-                        ? 'Reward Unlocked!'
+                        ? 'Grab Your Offer'
                         : 'Stamped'
                       : isNextSlotLocked
                       ? `Locked`

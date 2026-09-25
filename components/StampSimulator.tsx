@@ -20,12 +20,7 @@ export default function StampSimulator() {
 
   const totalStamps = 3;
 
-  // Format seconds to mm:ss
-  const formatTime = (totalSecs: number) => {
-    const mins = Math.floor(totalSecs / 60);
-    const secs = totalSecs % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  // formatTime removed because timer is hidden
 
   useEffect(() => {
     if (!lastStampTime || stamps === 0) {
@@ -191,7 +186,7 @@ export default function StampSimulator() {
               <div style={{ fontSize: '0.7rem', color: isStamped ? '#f59e0b' : isNextSlotLocked ? '#ea580c' : '#64748b', fontWeight: 600 }}>
                 {isStamped
                   ? isReward
-                    ? 'Free Chai!'
+                    ? 'Grab Your Offer'
                     : 'Stamped'
                   : isNextSlotLocked
                     ? `Locked`

@@ -14,10 +14,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
-  signInWithPopup,
-  GoogleAuthProvider,
 } from 'firebase/auth';
-import { auth } from './firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from './firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -25,7 +24,7 @@ interface AuthContextType {
   isSignedIn: boolean;
   signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+
   signOut: () => Promise<void>;
 }
 
@@ -52,16 +51,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (displayName && credential.user) {
       await updateProfile(credential.user, { displayName });
     }
+    
+    // Save to Firestore
+    if (credential.user) {
+      await setDoc(doc(db, 'users', credential.user.uid), {
+        email: email,
+        displayName: displayName || '',
+        role: email.toLowerCase() === 'bhar@gmail.com' ? 'admin' : 'customer',
+        createdAt: new Date().toISOString(),
+        stamps: 0,
+        totalStamps: 3,
+        history: []
+      });
+    }
   };
 
   const signInWithEmail = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  };
+
 
   const signOut = async () => {
     await firebaseSignOut(auth);
@@ -75,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isSignedIn: !!user,
         signUpWithEmail,
         signInWithEmail,
-        signInWithGoogle,
+
         signOut,
       }}
     >
