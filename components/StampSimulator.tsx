@@ -16,8 +16,6 @@ export default function StampSimulator() {
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
   const [isResetting, setIsResetting] = useState<boolean>(false);
   const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
-  const [simulatedSpend, setSimulatedSpend] = useState<number>(60);
-  const [banner, setBanner] = useState<{ text: React.ReactNode; type: 'reward' | 'info' | 'warning' } | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const totalStamps = 3;
@@ -40,18 +38,6 @@ export default function StampSimulator() {
       const elapsed = Date.now() - lastStampTime;
       const remaining = Math.max(0, Math.ceil((COOLDOWN_MS - elapsed) / 1000));
       setSecondsRemaining(remaining);
-
-      if (remaining === 0) {
-        setBanner((prev) => {
-          if (prev?.type === 'warning') {
-            return {
-              type: 'info',
-              text: <span className="flex items-center gap-1"><Sparkles size={16} className="inline-block" /> 10 minutes have passed! You can now collect your next stamp with a ₹50+ order.</span>,
-            };
-          }
-          return prev;
-        });
-      }
     }, 1000);
 
     return () => clearInterval(interval);
@@ -71,10 +57,6 @@ export default function StampSimulator() {
 
 
     if (isLocked) {
-      setBanner({
-        type: 'warning',
-        text: <span className="flex items-center gap-1"><Hourglass size={16} className="inline-block" /> 10-Minute Adda Rule: Please wait {formatTime(secondsRemaining)} or re-open the website after 10 minutes to collect your next stamp.</span>,
-      });
       return;
     }
 
@@ -87,10 +69,6 @@ export default function StampSimulator() {
       setTimeout(() => setAnimatingIndex(null), 600);
       setLastStampTime(now);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
-      setBanner({
-        type: 'warning',
-        text: <span className="flex items-center gap-1"><Coffee size={16} className="inline-block" /> Order ₹{simulatedSpend} Qualified! Stamp {nextStamp} of {totalStamps} collected! 10-minute wait required. Re-open website after 10 mins!</span>,
-      });
     } else {
       // 3rd stamp collected -> all 3 collected!
       setStamps(3);
@@ -99,33 +77,16 @@ export default function StampSimulator() {
       setLastStampTime(null);
       setSecondsRemaining(0);
       setIsResetting(true);
-      setBanner({
-        type: 'reward',
-        text: <span className="flex items-center gap-1"><PartyPopper size={16} className="inline-block" /> Congratulations! All 3 stamps collected! 1 Free Bhar Chai unlocked! Card is automatically resetting...</span>,
-      });
 
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         setStamps(0);
         setCompletedCards((prev) => prev + 1);
         setIsResetting(false);
-        setBanner({
-          type: 'info',
-          text: <span className="flex items-center gap-1"><RotateCw size={16} className="inline-block" /> Card automatically reset! Ready for your next 3-stamp chai cycle.</span>,
-        });
-        setTimeout(() => setBanner(null), 3500);
       }, 2200);
     }
   };
 
-  const handleFastForwardDemo = () => {
-    setLastStampTime(Date.now() - COOLDOWN_MS - 1000);
-    setSecondsRemaining(0);
-    setBanner({
-      type: 'info',
-      text: <span className="flex items-center gap-1"><Zap size={16} className="inline-block" /> [Demo] Fast-forwarded 10 minutes! Stamp unlocked.</span>,
-    });
-  };
 
   const handleReset = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -133,7 +94,6 @@ export default function StampSimulator() {
     setLastStampTime(null);
     setSecondsRemaining(0);
     setIsResetting(false);
-    setBanner(null);
   };
 
   return (
@@ -186,7 +146,7 @@ export default function StampSimulator() {
             </span>
           )}
           <span className="demo-member-badge flex items-center gap-1">
-            {isLocked ? <><Hourglass size={14} className="inline-block" /> LOCKED ({formatTime(secondsRemaining)})</> : stamps === totalStamps ? <><PartyPopper size={14} className="inline-block" /> 3/3 COLLECTED!</> : 'GOLD ADDA MEMBER'}
+            {isLocked ? <><Lock size={14} className="inline-block" /> LOCKED</> : stamps === totalStamps ? <><PartyPopper size={14} className="inline-block" /> 3/3 COLLECTED!</> : 'GOLD ADDA MEMBER'}
           </span>
         </div>
       </div>
@@ -208,7 +168,7 @@ export default function StampSimulator() {
                 isStamped
                   ? `Stamp ${index + 1} collected!`
                   : isNextSlotLocked
-                  ? `Locked: wait ${formatTime(secondsRemaining)}`
+                  ? `Locked`
                   : `Collect stamp ${index + 1} (Min ₹50 spend)`
               }
               style={{
@@ -236,7 +196,7 @@ export default function StampSimulator() {
                     ? 'Free Chai!'
                     : 'Stamped'
                   : isNextSlotLocked
-                  ? `Wait ${formatTime(secondsRemaining)}`
+                  ? `Locked`
                   : isReward
                   ? '3rd Reward'
                   : 'Min ₹50'}
@@ -249,11 +209,7 @@ export default function StampSimulator() {
       <div className="stamp-action-bar">
         <div className="stamp-counter-text">
           Progress: <strong>{stamps}</strong> of <strong>{totalStamps}</strong> stamps
-          {isLocked && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ea580c', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
-              <Hourglass size={14} className="inline-block" /> Next stamp unlocks in {formatTime(secondsRemaining)} (Re-open website after 10 mins)
-            </span>
-          )}
+
 
           {stamps === totalStamps && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700, marginTop: '2px' }}>
@@ -274,7 +230,7 @@ export default function StampSimulator() {
               {isResetting
                 ? <>Auto-resetting... <RotateCw size={16} className="animate-spin inline-block" /></>
                 : isLocked
-                ? <>Wait {formatTime(secondsRemaining)} <Hourglass size={16} className="inline-block" /></>
+                ? <>Locked <Lock size={16} className="inline-block" /></>
                 : stamps === 0
                 ? <>Tap to Stamp #1 <Coffee size={16} className="inline-block" /></>
                 : stamps < totalStamps
@@ -283,25 +239,7 @@ export default function StampSimulator() {
             </span>
           </button>
 
-          {isLocked && (
-            <button
-              type="button"
-              onClick={handleFastForwardDemo}
-              style={{
-                background: 'rgba(245, 158, 11, 0.1)',
-                border: '1px solid #f59e0b',
-                color: '#fbbf24',
-                borderRadius: '999px',
-                padding: '6px 12px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-              title="Fast forward 10 minutes to test collecting next stamp"
-            >
-              <span className="flex items-center justify-center gap-1"><Zap size={14} className="inline-block" /> Skip 10m</span>
-            </button>
-          )}
+
 
           {stamps > 0 && !isResetting && (
             <button
