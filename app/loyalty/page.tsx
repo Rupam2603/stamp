@@ -4,9 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
-import { updateLoyaltyData } from '@/app/actions/loyalty';
-import { useRouter } from 'next/navigation';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 10 minutes = 600,000 ms
@@ -24,72 +21,43 @@ export default function Loyalty() {
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
   const [isAutoResetting, setIsAutoResetting] = useState<boolean>(false);
   const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
-  const [notification, setNotification] = useState<{ type: 'reward' | 'info' | 'warning'; text: string } | null>(null);
   const [hasMounted, setHasMounted] = useState<boolean>(false);
-  const { user, isLoaded } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.push('/sign-in');
-    }
-  }, [user, isLoaded, router]);
 
   const totalStamps = 3;
   const resetTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize from Firestore or localStorage
+  // Initialize from localStorage
   useEffect(() => {
-    if (!isLoaded) return;
-
-    const loadData = async () => {
+    const loadData = () => {
       try {
         let validStamps = 0;
         let validTime: number | null = null;
         let validCards = 0;
 
-        if (user) {
-          validStamps = typeof user.stamps === 'number' ? user.stamps : 0;
-          validTime = typeof user.lastStampTime === 'number' && user.lastStampTime > 0 ? user.lastStampTime : null;
-          validCards = typeof user.completedCards === 'number' ? user.completedCards : 0;
-        } else {
-          const savedStamps = parseInt(localStorage.getItem(STORAGE_KEYS.STAMPS) || '0', 10);
-          const savedTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_TIME) || '0', 10);
-          const savedCards = parseInt(localStorage.getItem(STORAGE_KEYS.COMPLETED) || '0', 10);
+        const savedStamps = parseInt(localStorage.getItem(STORAGE_KEYS.STAMPS) || '0', 10);
+        const savedTime = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_TIME) || '0', 10);
+        const savedCards = parseInt(localStorage.getItem(STORAGE_KEYS.COMPLETED) || '0', 10);
 
-          validStamps = isNaN(savedStamps) ? 0 : Math.min(3, Math.max(0, savedStamps));
-          validTime = isNaN(savedTime) || savedTime <= 0 ? null : savedTime;
-          validCards = isNaN(savedCards) ? 0 : Math.max(0, savedCards);
-        }
+        validStamps = isNaN(savedStamps) ? 0 : Math.min(3, Math.max(0, savedStamps));
+        validTime = isNaN(savedTime) || savedTime <= 0 ? null : savedTime;
+        validCards = isNaN(savedCards) ? 0 : Math.max(0, savedCards);
 
         setStamps(validStamps);
         setCompletedCards(validCards);
         setLastStampTime(validTime);
 
-      if (validTime && validStamps > 0 && validStamps < totalStamps) {
-        const elapsed = Date.now() - validTime;
-        const remaining = Math.max(0, Math.ceil((COOLDOWN_MS - elapsed) / 1000));
-        setSecondsRemaining(remaining);
-
-        if (remaining > 0) {
-          setNotification({
-            type: 'warning',
-            text: `⏳ 10-Minute Adda Rule: Please wait a few minutes before collecting your next stamp.`,
-          });
-        } else {
-          setNotification({
-            type: 'info',
-            text: `✨ Welcome back! 10 minutes have passed since your last cup. Stamp ${validStamps + 1} is now unlocked! (Min ₹50 spend required)`,
-          });
+        if (validTime && validStamps > 0 && validStamps < totalStamps) {
+          const elapsed = Date.now() - validTime;
+          const remaining = Math.max(0, Math.ceil((COOLDOWN_MS - elapsed) / 1000));
+          setSecondsRemaining(remaining);
         }
-      }
       } catch (e) {
         console.error('Error loading loyalty storage', e);
       }
       setHasMounted(true);
     };
     loadData();
-  }, [user, isLoaded]);
+  }, []);
 
   // Live countdown timer ticking every 1 second
   useEffect(() => {
@@ -112,37 +80,18 @@ export default function Loyalty() {
           setLastStampTime(null);
           
           try {
-            if (user) {
-              updateLoyaltyData(0, nextCompleted, null).catch(console.error);
-            }
             localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
             localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
             localStorage.setItem(STORAGE_KEYS.COMPLETED, String(nextCompleted));
           } catch (e) {
             console.error(e);
           }
-
-          setNotification({
-            type: 'info',
-            text: `↺ Card automatically reset! Ready for Round ${nextCompleted + 1}. Spend min ₹50 on your next 3 orders to earn another free treat!`,
-          });
-          setTimeout(() => setNotification(null), 5000);
-        } else {
-          setNotification((prev) => {
-            if (prev?.type === 'warning') {
-              return {
-                type: 'info',
-                text: '✨ 10 minutes have passed! Your next stamp is now ready to collect with a ₹50+ order.',
-              };
-            }
-            return prev;
-          });
         }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastStampTime, stamps, completedCards, user]);
+  }, [lastStampTime, stamps, completedCards]);
 
   // Clean up auto-reset timer on unmount
   useEffect(() => {
@@ -164,10 +113,6 @@ export default function Loyalty() {
 
     // Check 10-minute cooldown rule
     if (isLocked) {
-      setNotification({
-        type: 'warning',
-        text: `⏳ Cooldown active! Please wait or re-open the website later to collect your next stamp.`,
-      });
       return;
     }
 
@@ -183,19 +128,11 @@ export default function Loyalty() {
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
 
       try {
-        if (user) {
-          updateLoyaltyData(nextStamp, completedCards, now).catch(console.error);
-        }
         localStorage.setItem(STORAGE_KEYS.STAMPS, String(nextStamp));
         localStorage.setItem(STORAGE_KEYS.LAST_TIME, String(now));
       } catch (e) {
         console.error(e);
       }
-
-      setNotification({
-        type: 'warning',
-        text: `🍵 Qualified! Stamp ${nextStamp} of 3 collected! 10-minute cooldown started. Re-open the website after 10 minutes for Stamp ${nextStamp + 1}!`,
-      });
     } else {
       // 3rd stamp collected -> wait 10 mins before new card
       setStamps(3);
@@ -204,16 +141,8 @@ export default function Loyalty() {
       setLastStampTime(now);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
       setIsAutoResetting(false);
-
-      setNotification({
-        type: 'reward',
-        text: '🎉 Congratulations! Grab Your Offer! New card will be available after 10 minutes.',
-      });
       
       try {
-        if (user) {
-          updateLoyaltyData(3, completedCards, now).catch(console.error);
-        }
         localStorage.setItem(STORAGE_KEYS.STAMPS, '3');
         localStorage.setItem(STORAGE_KEYS.LAST_TIME, String(now));
       } catch (e) {
@@ -235,10 +164,6 @@ export default function Loyalty() {
     } catch (e) {
       console.error(e);
     }
-    setNotification({
-      type: 'info',
-      text: '⚡ [Demo Mode] Fast-forwarded 10 minutes! You can now collect your next stamp without waiting.',
-    });
   };
 
   // Reset entire card
@@ -249,19 +174,11 @@ export default function Loyalty() {
     setSecondsRemaining(0);
     setIsAutoResetting(false);
     try {
-      if (user) {
-        updateLoyaltyData(0, completedCards, null).catch(console.error);
-      }
       localStorage.setItem(STORAGE_KEYS.STAMPS, '0');
       localStorage.removeItem(STORAGE_KEYS.LAST_TIME);
     } catch (e) {
       console.error(e);
     }
-    setNotification({
-      type: 'info',
-      text: '↺ Card reset to 0 stamps. Ready to start fresh!',
-    });
-    setTimeout(() => setNotification(null), 3000);
   };
 
   return (
@@ -309,64 +226,6 @@ export default function Loyalty() {
           Every customer collects 3 stamps per card with a <strong>minimum ₹50 order spend</strong> per stamp. After each stamp, wait 10 minutes and re-open the website for the next cup. After 3 stamps, your card automatically resets for your next cycle!
         </p>
       </div>
-
-      {/* NOTIFICATION BANNER */}
-      {notification && (
-        <div
-          style={{
-            marginBottom: '20px',
-            padding: '14px 18px',
-            borderRadius: '16px',
-            fontSize: '0.92rem',
-            fontWeight: 700,
-            background:
-              notification.type === 'reward'
-                ? 'rgba(245, 158, 11, 0.18)'
-                : notification.type === 'warning'
-                ? 'rgba(234, 88, 12, 0.16)'
-                : 'rgba(56, 189, 248, 0.12)',
-            border:
-              notification.type === 'reward'
-                ? '1px solid #f59e0b'
-                : notification.type === 'warning'
-                ? '1px solid #ea580c'
-                : '1px solid rgba(56, 189, 248, 0.3)',
-            color:
-              notification.type === 'reward'
-                ? '#fbbf24'
-                : notification.type === 'warning'
-                ? '#fdba74'
-                : '#38bdf8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>{notification.text}</span>
-          </div>
-
-          {isAutoResetting && (
-            <span
-              style={{
-                background: '#f59e0b',
-                color: '#000000',
-                padding: '4px 10px',
-                borderRadius: '999px',
-                fontSize: '0.75rem',
-                fontWeight: 800,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Auto-resetting...
-            </span>
-          )}
-        </div>
-      )}
-
-
 
       {/* VIRTUAL MEMBERSHIP CARD */}
       <style>{`
