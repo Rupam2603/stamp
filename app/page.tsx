@@ -20,7 +20,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-subtext">
-              Step into <strong>BHAAR MOSHAI (ভাঁড় মশাই)</strong> for authentic Kolkata-style earthen-pot tea, steaming snacks, and endless adda. Collect 3 digital stamps every time you visit, and unlock your 3rd chai completely free — card automatically resets for your next rewards!
+              Step into <strong>BHAAR MOSHAI (ভাঁড় মশাই)</strong> for authentic Bengali-style earthen-pot tea, steaming snacks, and endless adda. Collect 3 digital stamps every time you visit, and unlock exiting offers on the 3rd visit — card automatically resets for your next rewards!
             </p>
 
             <div className="hero-cta-group">
@@ -45,7 +45,7 @@ export default function Home() {
               </div>
               <div className="perk-item">
                 <div className="perk-icon-wrap">🎁</div>
-                <span>3rd Bhar Free</span>
+                <span>Get exiting Offers on 3rd visit</span>
               </div>
               <div className="perk-item">
                 <div className="perk-icon-wrap">🍪</div>
@@ -68,7 +68,7 @@ export default function Home() {
               <h2 className="showcase-title">BHAAR MOSHAI</h2>
               <div className="showcase-bengali-tagline">— চায়ের আড্ডার ঠিকানা —</div>
               <p className="showcase-sub">
-                Handcrafted Clay-Cup Chai, Golden Kolkata Snacks & Digital Rewards for true tea connoisseurs.
+                Handcrafted Clay-Cup Chai, Golden Bengali Snacks & Digital Rewards for true tea lovers.
               </p>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function Home() {
           <span className="section-label">WHY YOU&apos;LL LOVE BHAAR MOSHAI</span>
           <h2 className="section-title">Authentic Flavors, Seamless Rewards</h2>
           <p className="section-desc">
-            We blend Kolkata&apos;s timeless adda culture with effortless digital rewards designed around your daily chai cravings.
+            We blend Bengali's timeless adda culture with effortless digital rewards designed around your daily chai cravings.
           </p>
         </div>
 
@@ -118,11 +118,11 @@ export default function Home() {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon-badge">🎉</div>
-            <h3 className="feature-title">Scratch & Win Treats</h3>
-            <div className="feature-bengali-label">সারপ্রাইজ স্ক্র্যাচ অফার ও উপহার</div>
+            <div className="feature-icon-badge">🍪</div>
+            <h3 className="feature-title">Edible Tea Cups</h3>
+            <div className="feature-bengali-label">বিস্কুটের চায়ের কাপ</div>
             <p className="feature-desc">
-              Hit milestone visits to unlock digital scratch cards containing instant discounts, free cookies, hot samosas, or specialty malai chai.
+              Enjoy our signature hot chai in delicious biscuit cups that you can eat! Zero waste and perfectly paired with your tea.
             </p>
           </div>
 
