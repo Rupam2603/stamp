@@ -36,7 +36,7 @@ export default function NavHeader() {
             {!isLoaded ? null : isSignedIn ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '0.82rem', color: '#fbbf24', fontWeight: 600 }}>
-                  {user?.displayName || user?.email?.split('@')[0] || 'Member'}
+                  {user?.name || user?.email?.split('@')[0] || 'Member'}
                 </span>
                 <button
                   className="auth-btn-ghost"

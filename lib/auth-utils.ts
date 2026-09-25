@@ -17,9 +17,9 @@ export async function getSession() {
     });
 
     return {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.name,
+      id: payload.sub as string,
+      email: payload.email as string,
+      name: (payload.name as string) || '',
     };
   } catch (error) {
     console.error("Error getting/verifying Neon Auth session JWT:", error);

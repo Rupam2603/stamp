@@ -32,7 +32,7 @@ export default function Activate() {
 
   // If customer is signed in, show their active card!
   if (isSignedIn && user) {
-    const memberName = user.displayName || user.email?.split('@')[0] || 'Valued Guest';
+    const memberName = user.name || user.email?.split('@')[0] || 'Valued Guest';
     const memberContact = user.email || 'Linked to Account';
     const memberPassId = `BM-2026-${user.id?.slice(-4).toUpperCase() || '0000'}`;
 
