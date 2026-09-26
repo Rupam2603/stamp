@@ -18,8 +18,8 @@ const STORAGE_KEYS = {
 };
 
 const SHOP_LOCATION = {
-  latitude: 22.5726, // Default to Kolkata center, user should update this to exact shop coordinates
-  longitude: 88.3639
+  latitude: 22.7513902,
+  longitude: 88.3537697
 };
 const MAX_DISTANCE_METERS = 50;
 
