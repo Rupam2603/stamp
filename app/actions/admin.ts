@@ -2,14 +2,13 @@
 
 import { db } from '@/db';
 import { users } from '@/db/schema';
-import { getSessionAction } from './auth';
+import { unstable_noStore as noStore } from 'next/cache';
+import { eq } from 'drizzle-orm';
 
 export async function getAllUsers() {
+  noStore();
   try {
-    const sessionUser = await getSessionAction();
-    if (!sessionUser || !sessionUser.isAdmin) return { error: 'Unauthorized' };
-
-    const allUsers = await db.select().from(users);
+    const allUsers = await db.select().from(users).where(eq(users.isAdmin, false));
     return { success: true, users: allUsers };
   } catch (error: any) {
     console.error('Failed to get all users:', error);

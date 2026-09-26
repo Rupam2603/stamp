@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { getAllUsers } from '@/app/actions/admin';
+import { Users, Award, ShieldAlert, RefreshCw } from 'lucide-react';
 
 interface UserData {
   id: string;
@@ -14,29 +14,18 @@ interface UserData {
   stamps: number;
   completedCards: number;
   createdAt: string;
+  stampHistory?: number[];
 }
 
-export default function Admin() {
-  const { user, isLoaded } = useAuth();
+export default function AdminDashboard() {
   const router = useRouter();
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [usersList, setUsersList] = useState<UserData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (isLoaded) {
-      if (!user) {
-        router.push('/sign-in');
-      } else if (user.email !== 'bhar@gmail.com') {
-        router.push('/loyalty');
-      } else {
-        // Fetch all users
-        fetchUsers();
-      }
-    }
-  }, [user, isLoaded, router]);
-
-  const fetchUsers = async () => {
-    setLoading(true);
+  const fetchUsers = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
+    setIsRefreshing(true);
     try {
       const res = await getAllUsers();
       if (res.success && res.users) {
@@ -46,89 +35,140 @@ export default function Admin() {
         }));
         // sort by creation date
         usersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setUsers(usersData);
+        setUsersList(usersData as UserData[]);
       }
     } catch (err) {
       console.error('Error fetching users:', err);
     } finally {
-      setLoading(false);
+      if (showLoading) setIsLoading(false);
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 
-  if (!isLoaded || (user && user.email !== 'bhar@gmail.com')) {
-    return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading or unauthorized...</div>;
+  useEffect(() => {
+    // Check if the user is an admin
+    const isAdmin = localStorage.getItem('isAdmin');
+    if (isAdmin !== 'true') {
+      router.push('/login');
+      return;
+    }
+
+    fetchUsers(true);
+
+    // Poll every 5 seconds for real-time updates
+    const intervalId = setInterval(() => {
+      fetchUsers(false);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [router]);
+
+
+
+  if (isLoading) {
+    return (
+      <main className="main-section" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--text-tertiary)' }}>Loading dashboard...</p>
+      </main>
+    );
   }
 
   return (
-    <main className="main-section" style={{ maxWidth: '900px' }}>
-      <div className="section-header" style={{ textAlign: 'left', marginBottom: '30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#1c202d', border: '1px solid var(--border-highlight)', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Image
-              src="/logo.png"
-              alt="BHAAR MOSHAI Logo"
-              width={34}
-              height={34}
-            />
-          </div>
-          <div>
-            <span className="section-label" style={{ margin: 0 }}>ADMIN DASHBOARD</span>
-            <h1 className="section-title" style={{ fontSize: '1.8rem', margin: 0 }}>
-              Customers & Loyalty Stats
-            </h1>
-          </div>
+    <main className="main-section animate-fade-up" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div>
+          <h1 className="section-title" style={{ fontSize: '2rem' }}>Admin Dashboard</h1>
+          <p className="section-desc" style={{ marginTop: '8px' }}>Manage users and loyalty points.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={() => fetchUsers(false)} 
+            className="btn btn-secondary" 
+            style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <RefreshCw size={16} className={isRefreshing ? 'spin-anim' : ''} /> Refresh
+          </button>
+
         </div>
       </div>
+      <style>{`
+        .spin-anim {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      `}</style>
 
-      <div className="panel" style={{ padding: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: 'white', margin: 0 }}>Registered Users</h2>
-          <button 
-            onClick={fetchUsers} 
-            className="btn-primary" 
-            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-            disabled={loading}
-          >
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
+      <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--border-medium)', background: 'var(--bg-surface)' }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Users size={20} color="var(--accent-terracotta)" /> Registered Users ({usersList.length})
+          </h2>
         </div>
-
-        {loading ? (
-          <div style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>Loading user data...</div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                  <th style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>Name</th>
-                  <th style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>Email</th>
-                  <th style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>Current Stamps</th>
-                  <th style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>Free Cups Redeemed</th>
-                  <th style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>Joined Date</th>
+        
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-medium)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Name</th>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Email</th>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Role</th>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Stamps</th>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Completed Cards</th>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Stamp History</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usersList.map((user) => (
+                <tr key={user.id} style={{ borderBottom: '1px solid var(--border-medium)', transition: 'background 0.2s ease' }}>
+                  <td style={{ padding: '16px 24px', fontWeight: 500 }}>{user.name}</td>
+                  <td style={{ padding: '16px 24px', color: 'var(--text-secondary)' }}>{user.email}</td>
+                  <td style={{ padding: '16px 24px' }}>
+                    {user.isAdmin ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#ffebee', color: '#c62828', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
+                        <ShieldAlert size={14} /> Admin
+                      </span>
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'var(--bg-subtle)', color: 'var(--text-secondary)', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 500 }}>
+                        Customer
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: '16px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Award size={16} color="var(--accent-terracotta)" />
+                      <span style={{ fontWeight: 600 }}>{user.stamps} / 3</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: '16px 24px', color: 'var(--text-secondary)' }}>{user.completedCards}</td>
+                  <td style={{ padding: '16px 24px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                    {user.stampHistory && user.stampHistory.length > 0 ? (
+                      <details style={{ cursor: 'pointer' }}>
+                        <summary style={{ fontWeight: 600, color: 'var(--accent-terracotta)', outline: 'none', userSelect: 'none' }}>
+                          View Stamps ({Math.min(3, user.stampHistory.length)})
+                        </summary>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                          {user.stampHistory.slice(-3).map((timestamp, idx) => (
+                            <span key={idx} style={{ background: 'var(--bg-subtle)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-light)' }}>
+                              <strong>Stamp {idx + 1}:</strong> {new Date(timestamp).toLocaleString()}
+                            </span>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <span style={{ color: 'var(--text-tertiary)' }}>No history</span>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {users.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#94a3b8' }}>No users found</td>
-                  </tr>
-                ) : (
-                  users.map(u => (
-                    <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '12px', color: 'white' }}>{u.name || '-'} {u.isAdmin ? '(Admin)' : ''}</td>
-                      <td style={{ padding: '12px', color: '#cbd5e1' }}>{u.email}</td>
-                      <td style={{ padding: '12px', color: '#f59e0b', fontWeight: 'bold' }}>{u.stamps} / 3</td>
-                      <td style={{ padding: '12px', color: '#4ade80', fontWeight: 'bold' }}>{u.completedCards}</td>
-                      <td style={{ padding: '12px', color: '#94a3b8', fontSize: '0.8rem' }}>
-                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+          
+          {usersList.length === 0 && (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+              No users found in the database.
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

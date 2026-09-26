@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import StampSimulator from '../components/StampSimulator';
-import { Coffee, Sparkles, Clock, Gift, Cookie, Smartphone, Sunset, Croissant, Sandwich } from 'lucide-react';
+import { Coffee, Sparkles, Clock, Gift, Cookie, Smartphone, Sunset, Croissant, Sandwich, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -10,98 +9,73 @@ export default function Home() {
       <section className="hero-wrapper">
         <div className="hero-grid">
           <div>
-            <div className="hero-badge-tag">
+            <div className="hero-badge-tag animate-fade-up">
               <span className="hero-badge-dot"></span>
-              <span>BHAAR MOSHAI · চায়ের আড্ডার ঠিকানা · Sun – Sat: 5:00 PM – 11:00 PM</span>
+              <span>BHAAR MOSHAI · Sun – Sat: 5:00 PM – 11:00 PM</span>
             </div>
 
-            <h1 className="hero-headline">
+            <h1 className="hero-headline animate-fade-up delay-100">
               Every Sip of Bhar Chai, Deserves a{' '}
-              <span className="hero-gradient-text">Royal Reward</span>.
+              <strong>Royal Reward</strong>.
             </h1>
 
-            <p className="hero-subtext">
-              Step into <strong>BHAAR MOSHAI (ভাঁড় মশাই)</strong> for authentic Bengali-style earthen-pot tea, steaming snacks, and endless adda. Collect 3 digital stamps every time you visit, and unlock exiting offers on the 3rd visit — card automatically resets for your next rewards!
+            <p className="hero-subtext animate-fade-up delay-200">
+              Step into <strong>BHAAR MOSHAI (ভাঁড় মশাই)</strong> for authentic Bengali-style earthen-pot tea, steaming snacks, and endless adda. Collect 3 digital stamps every time you visit, and unlock exiting offers on the 3rd visit.
             </p>
 
-            <div className="hero-cta-group">
-              <Link className="btn-primary" href="/activate">
+            <div className="hero-cta-group animate-fade-up delay-300">
+              <Link className="btn btn-primary" href="/activate">
                 <Coffee size={18} />
-                <span>Activate Your Digital Card</span>
+                <span>Activate Digital Card</span>
               </Link>
-              <Link className="btn-secondary" href="/offers">
-                <Sparkles size={18} />
-                <span>Explore Adda Offers</span>
+              <Link className="btn btn-secondary" href="/offers">
+                <span>Explore Offers</span>
+                <ArrowRight size={16} />
               </Link>
             </div>
 
-            <div className="hero-perks">
-              <div className="perk-item">
-                <div className="perk-icon-wrap"><Clock size={20} /></div>
-                <span>Sun – Sat: 5 PM – 11 PM</span>
+            <div className="hero-perks animate-fade-up delay-400" style={{ display: 'flex', gap: '24px', marginTop: '40px', borderTop: '1px solid var(--border-subtle)', paddingTop: '32px' }}>
+              <div className="perk-item" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="perk-icon-wrap" style={{ color: 'var(--text-secondary)' }}><Coffee size={20} /></div>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Min ₹50 = 1 Stamp</span>
               </div>
-              <div className="perk-item">
-                <div className="perk-icon-wrap"><Coffee size={20} /></div>
-                <span>Min ₹50 = 1 Stamp</span>
-              </div>
-              <div className="perk-item">
-                <div className="perk-icon-wrap"><Gift size={20} /></div>
-                <span>Get exiting Offers on 3rd visit</span>
-              </div>
-              <div className="perk-item">
-                <div className="perk-icon-wrap"><Cookie size={20} /></div>
-                <span>Surprise Snack Drops</span>
+              <div className="perk-item" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="perk-icon-wrap" style={{ color: 'var(--text-secondary)' }}><Gift size={20} /></div>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Rewards on 3rd visit</span>
               </div>
             </div>
           </div>
 
-          <div className="hero-visual-card">
+          <div className="hero-visual-card animate-fade-up delay-200">
             <div className="logo-showcase-box">
               <div className="hero-main-logo">
                 <Image
                   src="/logo.png"
                   alt="BHAAR MOSHAI - ভাঁড় মশাই Logo"
-                  width={220}
-                  height={220}
+                  width={300}
+                  height={300}
                   priority
+                  style={{ objectFit: 'contain' }}
                 />
               </div>
-              <h2 className="showcase-title">BHAAR MOSHAI</h2>
-              <div className="showcase-bengali-tagline">— চায়ের আড্ডার ঠিকানা —</div>
-              <p className="showcase-sub">
-                Handcrafted Clay-Cup Chai, Golden Bengali Snacks & Digital Rewards for true tea lovers.
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* INTERACTIVE STAMP CARD SIMULATOR */}
-      <section className="main-section" style={{ paddingTop: 20 }}>
-        <div className="section-header">
-          <span className="section-label">LIVE INTERACTIVE PREVIEW</span>
-          <h2 className="section-title">See How Your Digital Pass Works</h2>
-          <p className="section-desc">
-            Tap the button or stamps below to test how your digital loyalty card updates when you visit BHAAR MOSHAI.
-          </p>
-        </div>
-
-        <StampSimulator />
-      </section>
-
       {/* CORE EXPERIENCE / FEATURES */}
       <section className="main-section">
-        <div className="section-header">
-          <span className="section-label">WHY YOU&apos;LL LOVE BHAAR MOSHAI</span>
+        <div className="section-header animate-fade-up">
+          <span className="section-label">Why You&apos;ll Love It</span>
           <h2 className="section-title">Authentic Flavors, Seamless Rewards</h2>
-          <p className="section-desc">
+          <p className="section-desc" style={{ color: 'var(--text-secondary)' }}>
             We blend Bengali's timeless adda culture with effortless digital rewards designed around your daily chai cravings.
           </p>
         </div>
 
         <div className="feature-grid">
-          <div className="feature-card">
-            <div className="feature-icon-badge"><Coffee size={28} /></div>
+          <div className="feature-card animate-fade-up delay-100">
+            <div className="feature-icon-badge"><Coffee size={24} /></div>
             <h3 className="feature-title">Authentic Clay Cups</h3>
             <div className="feature-bengali-label">মাটির খাঁটি ভাঁড়ের সোঁদা গন্ধ</div>
             <p className="feature-desc">
@@ -109,8 +83,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
-            <div className="feature-icon-badge"><Smartphone size={28} /></div>
+          <div className="feature-card animate-fade-up delay-200">
+            <div className="feature-icon-badge"><Smartphone size={24} /></div>
             <h3 className="feature-title">Digital Stamp Pass</h3>
             <div className="feature-bengali-label">ফোন নম্বর বললেই স্ট্যাম্প যোগ</div>
             <p className="feature-desc">
@@ -118,8 +92,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
-            <div className="feature-icon-badge"><Cookie size={28} /></div>
+          <div className="feature-card animate-fade-up delay-300">
+            <div className="feature-icon-badge"><Cookie size={24} /></div>
             <h3 className="feature-title">Edible Tea Cups</h3>
             <div className="feature-bengali-label">বিস্কুটের চায়ের কাপ</div>
             <p className="feature-desc">
@@ -127,8 +101,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
-            <div className="feature-icon-badge"><Sunset size={28} /></div>
+          <div className="feature-card animate-fade-up delay-400">
+            <div className="feature-icon-badge"><Sunset size={24} /></div>
             <h3 className="feature-title">Evening Adda Perks</h3>
             <div className="feature-bengali-label">সন্ধ্যার আড্ডায় স্পেশাল মেম্বার ডিসকাউন্ট</div>
             <p className="feature-desc">
@@ -139,20 +113,20 @@ export default function Home() {
       </section>
 
       {/* POPULAR MENU SHOWCASE */}
-      <section className="main-section" style={{ background: 'rgba(20, 24, 34, 0.4)', borderRadius: '32px', margin: '40px auto' }}>
+      <section className="main-section animate-fade-up" style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', margin: '40px auto' }}>
         <div className="section-header">
-          <span className="section-label">FAVOURITE BREWS & TREATS</span>
+          <span className="section-label">Favourite Brews & Treats</span>
           <h2 className="section-title">What Locals Sip & Crunch On</h2>
-          <p className="section-desc">
+          <p className="section-desc" style={{ color: 'var(--text-secondary)' }}>
             Pair your daily adda with our signature handcrafted tea and classic Kolkata accompaniments.
           </p>
         </div>
 
         <div className="feature-grid">
-          <div className="feature-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Coffee size={32} /></span>
-              <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
+          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <span style={{ color: 'var(--text-secondary)' }}><Coffee size={28} /></span>
+              <span style={{ border: '1px solid var(--border-medium)', color: 'var(--text-secondary)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
                 1 STAMP
               </span>
             </div>
@@ -163,10 +137,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Coffee size={32} /></span>
-              <span style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
+          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <span style={{ color: 'var(--text-secondary)' }}><Coffee size={28} /></span>
+              <span style={{ border: '1px solid var(--border-medium)', color: 'var(--text-secondary)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
                 1 STAMP
               </span>
             </div>
@@ -177,10 +151,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Croissant size={32} /></span>
-              <span style={{ background: 'rgba(217,83,41,0.15)', color: '#d95329', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
+          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <span style={{ color: 'var(--text-secondary)' }}><Croissant size={28} /></span>
+              <span style={{ border: '1px solid var(--accent-terracotta)', background: 'var(--accent-terracotta-dim)', color: 'var(--accent-terracotta)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
                 2 STAMPS
               </span>
             </div>
@@ -191,10 +165,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: '1.8rem', color: '#cbd5e1' }}><Sandwich size={32} /></span>
-              <span style={{ background: 'rgba(217,83,41,0.15)', color: '#d95329', fontSize: '0.78rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
+          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <span style={{ color: 'var(--text-secondary)' }}><Sandwich size={28} /></span>
+              <span style={{ border: '1px solid var(--accent-terracotta)', background: 'var(--accent-terracotta-dim)', color: 'var(--accent-terracotta)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
                 2 STAMPS
               </span>
             </div>
@@ -208,70 +182,66 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="main-section">
+      <section className="main-section animate-fade-up">
         <div className="section-header">
-          <span className="section-label">HOW IT WORKS</span>
-          <h2 className="section-title">Start Rewarding Your Visits in Seconds</h2>
-          <p className="section-desc">
+          <span className="section-label">How It Works</span>
+          <h2 className="section-title">Start Rewarding Your Visits</h2>
+          <p className="section-desc" style={{ color: 'var(--text-secondary)' }}>
             Three simple steps to never miss out on free tea and exclusive treats.
           </p>
         </div>
 
         <div className="feature-grid">
-          <div className="feature-card" style={{ textAlign: 'center', alignItems: 'center' }}>
-            <div className="feature-icon-badge" style={{ margin: '0 auto 18px' }}>1</div>
+          <div className="feature-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>01</div>
             <h3 className="feature-title">Activate Online</h3>
             <p className="feature-desc">
               Enter your mobile number and name in 30 seconds. Your digital loyalty wallet is created instantly.
             </p>
           </div>
 
-          <div className="feature-card" style={{ textAlign: 'center', alignItems: 'center' }}>
-            <div className="feature-icon-badge" style={{ margin: '0 auto 18px' }}>2</div>
+          <div className="feature-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>02</div>
             <h3 className="feature-title">Mention Your Phone</h3>
             <p className="feature-desc">
-              When ordering your chai and snacks (min ₹50 spend) at the counter, tell the cashier your number. Stamps sync automatically.
+              When ordering your chai and snacks at the counter, tell the cashier your number. Stamps sync automatically.
             </p>
           </div>
 
-          <div className="feature-card" style={{ textAlign: 'center', alignItems: 'center' }}>
-            <div className="feature-icon-badge" style={{ margin: '0 auto 18px' }}>3</div>
+          <div className="feature-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ fontSize: '1.2rem', color: 'var(--text-tertiary)' }}>03</div>
             <h3 className="feature-title">Enjoy Free Bhar Chai</h3>
             <p className="feature-desc">
-              Hit 3 stamps and claim your free hot bhar tea or delicious snack. Card automatically resets for endless reward cycles!
+              Hit 3 stamps and claim your free hot bhar tea or delicious snack. Card automatically resets for endless rewards!
             </p>
           </div>
         </div>
       </section>
 
       {/* CALL TO ACTION BANNER */}
-      <section className="main-section" style={{ paddingBottom: 100 }}>
+      <section className="main-section animate-fade-up delay-200" style={{ paddingBottom: 100 }}>
         <div
           style={{
-            background: 'radial-gradient(ellipse at 50% 50%, #2b1c16 0%, #151822 80%, #0c0e12 100%)',
-            border: '1px solid var(--border-highlight)',
-            borderRadius: '30px',
-            padding: '50px 30px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '80px 40px',
             textAlign: 'center',
-            boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div style={{ maxWidth: 640, margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', color: '#f59e0b', marginBottom: 12 }}>
-              <Coffee size={40} />
-              <Sparkles size={40} />
-            </div>
-            <h2 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', color: '#ffffff', fontWeight: 900, margin: '0 0 16px' }}>
-              Ready for Your Next Cup of Bhar Chai?
+          <div style={{ maxWidth: 560, margin: '0 auto' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', color: 'var(--text-primary)', margin: '0 0 16px', fontWeight: 400 }}>
+              Ready for Your Next Cup?
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: 30 }}>
-              Join hundreds of tea and adda enthusiasts at <strong>BHAAR MOSHAI (ভাঁড় মশাই)</strong>. Activate your digital loyalty card today and enjoy a welcome surprise on your first visit!
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.6, marginBottom: 40 }}>
+              Join hundreds of tea and adda enthusiasts at BHAAR MOSHAI (ভাঁড় মশাই). Activate your digital loyalty card today and enjoy a welcome surprise!
             </p>
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link className="btn-primary" href="/activate">
-                Activate My Card Now →
+              <Link className="btn btn-primary" href="/activate">
+                Activate My Card
               </Link>
-              <Link className="btn-secondary" href="/offers">
+              <Link className="btn btn-secondary" href="/offers">
                 View Today&apos;s Offers
               </Link>
             </div>

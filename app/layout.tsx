@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@/lib/auth-context";
+import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import NavHeader from "@/components/NavHeader";
+
+const playfair = Playfair_Display({ 
+  subsets: ["latin"],
+  variable: "--font-playfair",
+});
+
+const outfit = Outfit({ 
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
 
 export const metadata: Metadata = {
   title: "BHAAR MOSHAI | চায়ের আড্ডার ঠিকানা · Authentic Clay Chai & Loyalty Rewards",
@@ -21,8 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <AuthProvider>
+      <body className={`${playfair.variable} ${outfit.variable}`}>
           <div className="shell">
             <NavHeader />
             <main>{children}</main>
@@ -35,8 +44,8 @@ export default function RootLayout({
                       <img
                         src="/logo.png"
                         alt="BHAAR MOSHAI Logo"
-                        width={38}
-                        height={38}
+                        width={32}
+                        height={32}
                       />
                     </div>
                     <div>
@@ -63,24 +72,21 @@ export default function RootLayout({
                   <div className="footer-col-title">Cafe &amp; Adda Hours</div>
                   <ul className="footer-nav-list">
                     <li><span>Sunday – Saturday: 5:00 PM – 11:00 PM</span></li>
-                    <li><span>Evening Adda Hours: 5:00 PM – 11:00 PM</span></li>
-                    <li><span>Hot Singara &amp; Snacks: Fresh every evening</span></li>
-                    <li><span>Kolkata, West Bengal</span></li>
+                    <li><span>Serampore, Hooghly, West Bengal</span></li>
                   </ul>
                 </div>
               </div>
 
-              <div className="footer-bottom-row">
+              <div className="footer-bottom">
                 <div>
-                  © {new Date().getFullYear()} <strong>BHAAR MOSHAI</strong> (ভাঁড় মশাই). All rights reserved.
+                  © {new Date().getFullYear()} <strong>BHAAR MOSHAI</strong>. All rights reserved.
                 </div>
-                <div className="footer-tagline">
+                <div className="muted">
                   মাটির ভাঁড়ের খাঁটি চা · অরিজিনাল আড্ডা
                 </div>
               </div>
             </footer>
           </div>
-        </AuthProvider>
       </body>
     </html>
   );

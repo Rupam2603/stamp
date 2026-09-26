@@ -20,8 +20,6 @@ export default function StampSimulator() {
 
   const totalStamps = 3;
 
-  // formatTime removed because timer is hidden
-
   useEffect(() => {
     if (!lastStampTime || stamps === 0) {
       setSecondsRemaining(0);
@@ -55,8 +53,6 @@ export default function StampSimulator() {
   const handleAddStamp = () => {
     if (isResetting) return;
 
-
-
     if (isLocked) {
       return;
     }
@@ -71,7 +67,6 @@ export default function StampSimulator() {
       setLastStampTime(now);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
     } else {
-      // 3rd stamp collected -> all 3 collected! Wait 10 mins before new card.
       setStamps(3);
       setAnimatingIndex(stamps);
       setTimeout(() => setAnimatingIndex(null), 600);
@@ -91,17 +86,16 @@ export default function StampSimulator() {
   };
 
   return (
-    <div className="demo-card-container">
+    <div className="demo-card-container animate-fade-up">
       <style>{`
         @keyframes stampDrop {
-          0% { transform: scale(3) rotate(-30deg); opacity: 0; }
-          40% { transform: scale(0.8) rotate(10deg); opacity: 1; }
-          70% { transform: scale(1.1) rotate(-5deg); }
+          0% { transform: scale(2) rotate(-20deg); opacity: 0; }
+          40% { transform: scale(0.9) rotate(5deg); opacity: 1; }
+          70% { transform: scale(1.05) rotate(-2deg); }
           100% { transform: scale(1) rotate(0deg); }
         }
         .stamp-animate {
-          animation: stampDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-          color: #f59e0b;
+          animation: stampDrop 0.6s var(--ease-spring) forwards;
         }
       `}</style>
       <div className="demo-card-header">
@@ -110,36 +104,37 @@ export default function StampSimulator() {
             <Image
               src="/logo.png"
               alt="BHAAR MOSHAI Mini"
-              width={38}
-              height={38}
+              width={32}
+              height={32}
             />
           </div>
           <div>
-            <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1rem', lineHeight: 1.2 }}>
+            <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '1rem' }}>
               BHAAR MOSHAI CLUB
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#f59e0b' }}>
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {completedCards > 0 && (
             <span
               style={{
-                background: 'rgba(74, 222, 128, 0.16)',
-                border: '1px solid #4ade80',
-                color: '#4ade80',
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                padding: '4px 10px',
-                borderRadius: '999px',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--border-medium)',
+                color: 'var(--text-primary)',
+                fontSize: '0.75rem',
+                fontWeight: 500,
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-full)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
               }}
             >
-              <span className="flex items-center gap-1"><Trophy size={14} className="inline-block" /> {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Won!</span>
+              <Trophy size={14} /> {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Won
             </span>
           )}
-          <span className="demo-member-badge flex items-center gap-1">
-            {stamps === totalStamps ? <><PartyPopper size={14} className="inline-block" /> GET OFFERS!</> : isLocked ? <><Lock size={14} className="inline-block" /> LOCKED</> : 'GOLD ADDA MEMBER'}
+          <span className="demo-member-badge" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {stamps === totalStamps ? <><PartyPopper size={14} /> REWARDS READY</> : isLocked ? <><Lock size={14} /> LOCKED</> : 'GOLD MEMBER'}
           </span>
         </div>
       </div>
@@ -166,27 +161,25 @@ export default function StampSimulator() {
               }
               style={{
                 cursor: isResetting || isLocked ? 'not-allowed' : 'pointer',
-                transform: isStamped ? 'scale(1.02)' : 'scale(1)',
-                transition: 'all 0.3s ease',
-                opacity: isNextSlotLocked ? 0.75 : 1,
+                opacity: isNextSlotLocked ? 0.6 : 1,
               }}
             >
               <div className="stamp-number">
-                {isReward ? 'Grab Your Offer' : `BHAR #${index + 1}`}
+                {isReward ? 'Reward' : `BHAR #${index + 1}`}
               </div>
               <div className="stamp-icon">
                 {isStamped ? (
                   isReward ? <Gift size={28} className={animatingIndex === index ? 'stamp-animate' : ''} /> : <Coffee size={28} className={animatingIndex === index ? 'stamp-animate' : ''} />
                 ) : isNextSlotLocked ? (
-                  <Lock size={28} />
+                  <Lock size={28} style={{ color: 'var(--text-tertiary)' }} />
                 ) : (
-                  isReward ? <Sparkles size={28} /> : <Circle size={28} />
+                  isReward ? <Sparkles size={28} style={{ color: 'var(--text-tertiary)' }} /> : <Circle size={28} style={{ color: 'var(--text-tertiary)' }} />
                 )}
               </div>
-              <div style={{ fontSize: '0.7rem', color: isStamped ? '#f59e0b' : isNextSlotLocked ? '#ea580c' : '#64748b', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.75rem', color: isStamped ? 'var(--accent-terracotta)' : isNextSlotLocked ? 'var(--text-tertiary)' : 'var(--text-secondary)' }}>
                 {isStamped
                   ? isReward
-                    ? 'Grab Your Offer'
+                    ? 'Available'
                     : 'Stamped'
                   : isNextSlotLocked
                     ? `Locked`
@@ -199,45 +192,36 @@ export default function StampSimulator() {
         })}
       </div>
 
-      <div className="stamp-action-bar" style={{ justifyContent: 'center' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div className="stamp-action-bar" style={{ justifyContent: 'center', borderTop: 'none', padding: 0 }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             type="button"
-            className="interactive-stamp-btn"
+            className="btn btn-primary"
             onClick={handleAddStamp}
             disabled={isResetting || isLocked}
             style={{ opacity: isResetting || isLocked ? 0.65 : 1, cursor: isResetting || isLocked ? 'not-allowed' : 'pointer' }}
           >
-            <span className="flex items-center justify-center gap-1">
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               {isResetting
-                ? <>Auto-resetting... <RotateCw size={16} className="animate-spin inline-block" /></>
+                ? <>Resetting... <RotateCw size={16} className="animate-spin" /></>
                 : stamps === totalStamps
-                  ? <>Get Offers! (New card locked) <Lock size={16} className="inline-block" /></>
+                  ? <>Get Offers! <Lock size={16} /></>
                   : isLocked
-                    ? <>Locked <Lock size={16} className="inline-block" /></>
+                    ? <>Locked <Lock size={16} /></>
                     : stamps === 0
-                      ? <>Tap to Stamp #1 <Coffee size={16} className="inline-block" /></>
+                      ? <>Tap to Stamp #1 <Coffee size={16} /></>
                       : stamps < totalStamps
-                        ? <>Tap for Stamp #{stamps + 1} <Coffee size={16} className="inline-block" /></>
-                        : <>Card Complete! <Gift size={16} className="inline-block" /></>}
+                        ? <>Tap for Stamp #{stamps + 1} <Coffee size={16} /></>
+                        : <>Card Complete! <Gift size={16} /></>}
             </span>
           </button>
-
-
 
           {stamps > 0 && !isResetting && (
             <button
               type="button"
+              className="btn btn-secondary"
               onClick={handleReset}
-              style={{
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#94a3b8',
-                borderRadius: '999px',
-                padding: '6px 12px',
-                fontSize: '0.78rem',
-                cursor: 'pointer',
-              }}
+              style={{ padding: '8px 16px', fontSize: '0.8rem' }}
             >
               Reset
             </button>
@@ -245,17 +229,17 @@ export default function StampSimulator() {
         </div>
       </div>
 
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+      <div style={{ marginTop: '32px', textAlign: 'center' }}>
         <Link
           href="/loyalty"
           style={{
-            color: '#f59e0b',
-            fontSize: '0.88rem',
-            fontWeight: 600,
+            color: 'var(--text-secondary)',
+            fontSize: '0.85rem',
             textDecoration: 'none',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '8px',
+            transition: 'color 0.3s'
           }}
         >
           View your full 3-stamp digital card & rewards →

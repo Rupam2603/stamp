@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 const offersList = [
   {
@@ -66,7 +65,7 @@ const offersList = [
 
 export default function Offers() {
   return (
-    <main className="main-section">
+    <main className="main-section animate-fade-up">
       <div className="section-header">
         <span className="section-label">EXCLUSIVE ADDA DEALS</span>
         <h1 className="section-title">BHAAR MOSHAI Offers</h1>
@@ -81,25 +80,25 @@ export default function Offers() {
             key={offer.id}
             className="feature-card"
             style={{
-              borderColor: offer.highlight ? 'var(--border-highlight)' : 'rgba(255,255,255,0.08)',
+              borderColor: offer.highlight ? 'var(--border-medium)' : 'var(--border-light)',
               background: offer.highlight
-                ? 'radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.1) 0%, rgba(22, 26, 35, 0.95) 100%)'
-                : 'var(--bg-card)',
+                ? 'var(--bg-surface-elevated)'
+                : 'var(--bg-surface)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#f59e0b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--accent-terracotta)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 {offer.tag}
               </span>
-              <span style={{ background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px' }}>
+              <span style={{ background: 'var(--accent-terracotta-dim)', color: 'var(--accent-terracotta)', fontSize: '0.72rem', fontWeight: 600, padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
                 {offer.badge}
               </span>
             </div>
 
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: '0 0 4px', lineHeight: 1.3 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px', lineHeight: 1.3 }}>
               {offer.title}
             </h2>
-            <div style={{ fontSize: '0.86rem', color: '#f59e0b', fontWeight: 600, marginBottom: '12px' }}>
+            <div style={{ fontSize: '0.86rem', color: 'var(--accent-terracotta)', fontWeight: 500, marginBottom: '12px' }}>
               {offer.bengali}
             </div>
 
@@ -107,23 +106,21 @@ export default function Offers() {
               {offer.desc}
             </p>
 
-            <div style={{ background: '#0a0c10', border: '1px dashed rgba(245,158,11,0.3)', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-md)', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block' }}>PROMO CODE</span>
-                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', display: 'block' }}>PROMO CODE</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>
                   {offer.code}
                 </span>
               </div>
               <Link
                 href="/loyalty"
+                className="btn btn-primary"
                 style={{
-                  background: 'var(--gradient-brand)',
-                  color: '#ffffff',
                   padding: '6px 14px',
-                  borderRadius: '999px',
                   fontSize: '0.78rem',
-                  fontWeight: 700,
                   textDecoration: 'none',
+                  minWidth: '0',
                 }}
               >
                 Use in Pass
@@ -134,15 +131,15 @@ export default function Offers() {
       </div>
 
       <div style={{ marginTop: '50px', textAlign: 'center' }}>
-        <div style={{ display: 'inline-block', background: 'rgba(245,158,11,0.08)', border: '1px solid var(--border-highlight)', borderRadius: '20px', padding: '24px 32px', maxWidth: '600px' }}>
+        <div style={{ display: 'inline-block', background: 'var(--bg-surface)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', padding: '24px 32px', maxWidth: '600px' }}>
           <div style={{ fontSize: '1.4rem', marginBottom: '8px' }}>☕💬</div>
-          <h3 style={{ fontSize: '1.1rem', color: '#ffffff', margin: '0 0 6px', fontWeight: 800 }}>
+          <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', margin: '0 0 6px', fontWeight: 600 }}>
             Have a Large Adda Group or Party?
           </h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 16px', lineHeight: 1.5 }}>
             Planning an office tea party or college get-together? Get custom bulk tea kettles in clay bhars delivered to your table with special group discounts.
           </p>
-          <Link className="btn-primary" href="/activate">
+          <Link className="btn btn-secondary" href="/activate">
             Join BHAAR MOSHAI Club for Bulk Perks
           </Link>
         </div>
