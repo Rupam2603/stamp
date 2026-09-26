@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { getAllUsers } from '@/app/actions/admin';
-import { Users, Award, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Users, Award, ShieldAlert, RefreshCw, Search } from 'lucide-react';
 
 interface UserData {
   id: string;
@@ -22,6 +22,11 @@ export default function AdminDashboard() {
   const [usersList, setUsersList] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredUsers = usersList.filter(user => 
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const fetchUsers = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
@@ -99,10 +104,21 @@ export default function AdminDashboard() {
       `}</style>
 
       <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
-        <div style={{ padding: '24px', borderBottom: '1px solid var(--border-medium)', background: 'var(--bg-surface)' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--border-medium)', background: 'var(--bg-surface)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <h2 style={{ fontSize: '1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Users size={20} color="var(--accent-terracotta)" /> Registered Users ({usersList.length})
+            <Users size={20} color="var(--accent-terracotta)" /> Registered Users ({filteredUsers.length})
           </h2>
+          <div style={{ position: 'relative', maxWidth: '300px', width: '100%' }}>
+            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+            <input 
+              type="text" 
+              placeholder="Search by name..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input" 
+              style={{ paddingLeft: '36px', marginBottom: 0, paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', minHeight: '38px' }} 
+            />
+          </div>
         </div>
         
         <div style={{ overflowX: 'auto' }}>
@@ -118,7 +134,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {usersList.map((user) => (
+              {filteredUsers.length > 0 ? filteredUsers.map((user) => (
                 <tr key={user.id} style={{ borderBottom: '1px solid var(--border-medium)', transition: 'background 0.2s ease' }}>
                   <td style={{ padding: '16px 24px', fontWeight: 500 }}>{user.name}</td>
                   <td style={{ padding: '16px 24px', color: 'var(--text-secondary)' }}>{user.email}</td>
@@ -159,7 +175,13 @@ export default function AdminDashboard() {
                     )}
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+                    No customers found matching "{searchQuery}"
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           
