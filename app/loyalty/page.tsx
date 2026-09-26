@@ -340,7 +340,6 @@ export default function Loyalty() {
                   className={`stamp-slot ${isStamped ? 'stamped' : ''} ${isReward ? 'reward-slot' : ''}`}
                   onClick={handleAddStamp}
                   style={{
-                    minHeight: '110px',
                     cursor: isAutoResetting || isLocked ? 'not-allowed' : 'pointer',
                     opacity: isNextSlotLocked ? 0.6 : 1,
                     position: 'relative',
@@ -365,7 +364,7 @@ export default function Loyalty() {
                       isReward ? <Sparkles size={32} style={{ color: 'var(--text-tertiary)' }} /> : <Circle size={32} style={{ color: 'var(--text-tertiary)' }} />
                     )}
                   </span>
-                  <span style={{ fontSize: '0.72rem', color: isStamped ? 'var(--accent-terracotta)' : isNextSlotLocked ? 'var(--text-tertiary)' : 'var(--text-secondary)', fontWeight: 600 }}>
+                  <span className="stamp-desc" style={{ color: isStamped ? 'var(--accent-terracotta)' : isNextSlotLocked ? 'var(--text-tertiary)' : 'var(--text-secondary)', fontWeight: 600 }}>
                     {isStamped
                       ? isReward
                         ? 'Grab Your Offer'
