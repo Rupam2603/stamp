@@ -87,7 +87,7 @@ export default function Signup() {
             <label className="form-label" htmlFor="mobile">Mobile Number</label>
             <div style={{ position: 'relative' }}>
               <Phone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-              <input type="tel" id="mobile" name="mobile" className="input" placeholder="e.g. +91 9876543210" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
+              <input type="tel" id="mobile" name="mobile" className="input" placeholder="9876543210" pattern="[0-9]*" minLength={10} maxLength={10} style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
             </div>
           </div>
 
