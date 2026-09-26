@@ -2,6 +2,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Coffee, Sparkles, Clock, Gift, Cookie, Smartphone, Sunset, Croissant, Sandwich, ArrowRight } from 'lucide-react';
 
+const InstagramIcon = ({ size = 24, style = {} }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={style}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
+
 export default function Home() {
   return (
     <>
@@ -32,6 +51,15 @@ export default function Home() {
                 <span>Explore Offers</span>
                 <ArrowRight size={16} />
               </Link>
+              <a 
+                className="btn btn-secondary" 
+                href="https://www.instagram.com/bhaarmoshai?stkn=MTM0dGM1Y2Z4aHF3cg==" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <InstagramIcon size={18} style={{ color: '#E1306C' }} />
+                <span>@bhaarmoshai</span>
+              </a>
             </div>
 
             <div className="hero-perks animate-fade-up delay-400" style={{ display: 'flex', gap: '24px', marginTop: '40px', borderTop: '1px solid var(--border-subtle)', paddingTop: '32px' }}>
@@ -101,85 +129,11 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="feature-card animate-fade-up delay-400">
-            <div className="feature-icon-badge"><Sunset size={24} /></div>
-            <h3 className="feature-title">Evening Adda Perks</h3>
-            <div className="feature-bengali-label">সন্ধ্যার আড্ডায় স্পেশাল মেম্বার ডিসকাউন্ট</div>
-            <p className="feature-desc">
-              Members enjoy special happy hour pricing between 4:30 PM and 8:30 PM, bonus stamps on snack combos, and early taste-tests of new blends.
-            </p>
-          </div>
+
         </div>
       </section>
 
       {/* POPULAR MENU SHOWCASE */}
-      <section className="main-section animate-fade-up" style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', margin: '40px auto' }}>
-        <div className="section-header">
-          <span className="section-label">Favourite Brews & Treats</span>
-          <h2 className="section-title">What Locals Sip & Crunch On</h2>
-          <p className="section-desc" style={{ color: 'var(--text-secondary)' }}>
-            Pair your daily adda with our signature handcrafted tea and classic Kolkata accompaniments.
-          </p>
-        </div>
-
-        <div className="feature-grid">
-          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <span style={{ color: 'var(--text-secondary)' }}><Coffee size={28} /></span>
-              <span style={{ border: '1px solid var(--border-medium)', color: 'var(--text-secondary)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
-                1 STAMP
-              </span>
-            </div>
-            <h3 className="feature-title">Special Bhar Masala Chai</h3>
-            <div className="feature-bengali-label">স্পেশাল মসলা চা</div>
-            <p className="feature-desc">
-              Slow-cooked black tea infused with crushed cardamom, ginger, cloves, and whole milk in a traditional bhar.
-            </p>
-          </div>
-
-          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <span style={{ color: 'var(--text-secondary)' }}><Coffee size={28} /></span>
-              <span style={{ border: '1px solid var(--border-medium)', color: 'var(--text-secondary)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
-                1 STAMP
-              </span>
-            </div>
-            <h3 className="feature-title">Royal Kesar Malai Chai</h3>
-            <div className="feature-bengali-label">কেশর মালাই চা</div>
-            <p className="feature-desc">
-              Rich saffron strands with thick cream floated on top of a piping-hot clay cup. A customer favourite!
-            </p>
-          </div>
-
-          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <span style={{ color: 'var(--text-secondary)' }}><Croissant size={28} /></span>
-              <span style={{ border: '1px solid var(--accent-terracotta)', background: 'var(--accent-terracotta-dim)', color: 'var(--accent-terracotta)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
-                2 STAMPS
-              </span>
-            </div>
-            <h3 className="feature-title">Kolkata Khasta Singara</h3>
-            <div className="feature-bengali-label">গরম খাস্তা সিঙাড়া</div>
-            <p className="feature-desc">
-              Flaky, crispy pastry loaded with spiced cauliflower, potatoes, and peanuts served with tangy tamarind chutney.
-            </p>
-          </div>
-
-          <div className="feature-card" style={{ background: 'var(--bg-base)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <span style={{ color: 'var(--text-secondary)' }}><Sandwich size={28} /></span>
-              <span style={{ border: '1px solid var(--accent-terracotta)', background: 'var(--accent-terracotta-dim)', color: 'var(--accent-terracotta)', fontSize: '0.75rem', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
-                2 STAMPS
-              </span>
-            </div>
-            <h3 className="feature-title">Kolkata Bun Maska & Malai</h3>
-            <div className="feature-bengali-label">বন বাটার ও মালাই টোস্ট</div>
-            <p className="feature-desc">
-              Fresh pillowy bakery bun generously slathered with Amul butter or sweetened fresh malai, dipped into hot bhar chai.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* HOW IT WORKS */}
       <section className="main-section animate-fade-up">
@@ -244,6 +198,15 @@ export default function Home() {
               <Link className="btn btn-secondary" href="/offers">
                 View Today&apos;s Offers
               </Link>
+              <a 
+                className="btn btn-secondary" 
+                href="https://www.instagram.com/bhaarmoshai?stkn=MTM0dGM1Y2Z4aHF3cg==" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <InstagramIcon size={18} style={{ color: '#E1306C' }} />
+                <span>@bhaarmoshai</span>
+              </a>
             </div>
           </div>
         </div>
