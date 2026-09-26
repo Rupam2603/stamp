@@ -5,9 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
 import { getLoyaltyData, updateLoyaltyData } from '@/app/actions/loyalty';
+import { generateRegOptions, verifyRegResponse } from '@/app/actions/webauthn';
+import { startRegistration } from '@simplewebauthn/browser';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
-
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 10 minutes = 600,000 ms
 
@@ -50,6 +51,8 @@ export default function Loyalty() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [isRegisteringBiometrics, setIsRegisteringBiometrics] = useState<boolean>(false);
+  const [biometricsSuccess, setBiometricsSuccess] = useState<string | null>(null);
   const router = useRouter();
 
   const totalStamps = 3;
@@ -194,6 +197,42 @@ export default function Loyalty() {
       }
     };
     frame();
+  };
+
+  const handleRegisterBiometrics = async () => {
+    if (!userId) return;
+    setIsRegisteringBiometrics(true);
+    setLocationError(null);
+    setBiometricsSuccess(null);
+    
+    try {
+      const optionsRes = await generateRegOptions(userId);
+      if (!optionsRes.success || !optionsRes.options) {
+        throw new Error(optionsRes.message || 'Failed to get registration options');
+      }
+
+      let attResp;
+      try {
+        attResp = await startRegistration({ optionsJSON: optionsRes.options });
+      } catch (err: any) {
+        if (err.name === 'NotAllowedError') {
+          throw new Error('Biometric registration was cancelled.');
+        }
+        throw err;
+      }
+
+      const verifyRes = await verifyRegResponse(userId, attResp);
+      if (verifyRes.success) {
+        setBiometricsSuccess('Biometric login enabled successfully!');
+        setTimeout(() => setBiometricsSuccess(null), 3000);
+      } else {
+        throw new Error(verifyRes.message || 'Biometric verification failed');
+      }
+    } catch (err: any) {
+      setLocationError(err.message || 'Something went wrong during biometric registration.');
+    } finally {
+      setIsRegisteringBiometrics(false);
+    }
   };
 
   // Stamp collection handler
@@ -580,6 +619,20 @@ export default function Loyalty() {
           Browse Current Adda Offers & Combos →
         </Link>
       </div>
+      
+      {userId && (
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <button 
+            onClick={handleRegisterBiometrics}
+            disabled={isRegisteringBiometrics}
+            className="btn" 
+            style={{ padding: '10px 16px', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--border-medium)', color: 'var(--text-secondary)' }}
+          >
+            {isRegisteringBiometrics ? 'Setting up...' : 'Setup Biometric Login (FaceID / Fingerprint)'}
+          </button>
+          {biometricsSuccess && <div style={{ color: '#2e7d32', marginTop: '8px', fontSize: '0.85rem' }}>{biometricsSuccess}</div>}
+        </div>
+      )}
     </main>
   );
 }

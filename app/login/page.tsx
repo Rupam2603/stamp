@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { loginUser } from '@/app/actions/auth';
+import { generateAuthOptions, verifyAuthResponse } from '@/app/actions/webauthn';
+import { startAuthentication } from '@simplewebauthn/browser';
 import { useRouter } from 'next/navigation';
 
 export default function Login() {
@@ -67,6 +69,62 @@ export default function Login() {
     }
   }
 
+  async function handleBiometricLogin() {
+    if (!email) {
+      setError('Please enter your email first to use biometrics.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // 1. Get auth options from server
+      const optionsRes = await generateAuthOptions(email);
+      if (!optionsRes.success || !optionsRes.options) {
+        throw new Error(optionsRes.message || 'Failed to get authentication options');
+      }
+      
+      // 2. Start biometric auth in browser
+      let authResp;
+      try {
+        authResp = await startAuthentication({ optionsJSON: optionsRes.options });
+      } catch (err: any) {
+        if (err.name === 'NotAllowedError') {
+          throw new Error('Biometric authentication was cancelled or not allowed.');
+        }
+        throw err;
+      }
+      
+      // 3. Verify response with server
+      const verifyRes = await verifyAuthResponse(email, authResp);
+      if (verifyRes.success) {
+        setSuccess('Biometric login successful! Redirecting...');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userId', verifyRes.userId!);
+          localStorage.setItem('savedEmail', email);
+          if (verifyRes.isAdmin) {
+             localStorage.setItem('isAdmin', 'true');
+          }
+          window.dispatchEvent(new Event('auth-change'));
+        }
+        setTimeout(() => {
+          if (verifyRes.isAdmin) {
+             router.push('/admin');
+          } else {
+             router.push('/loyalty');
+          }
+        }, 1500);
+      } else {
+        throw new Error(verifyRes.message || 'Biometric verification failed');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong during biometric login.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <main className="main-section animate-fade-up" style={{ maxWidth: '480px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -115,9 +173,13 @@ export default function Login() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem' }} disabled={isLoading}>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem', marginBottom: '12px' }} disabled={isLoading}>
             {isLoading ? <Loader2 size={18} className="animate-spin" /> : 'Log In'}
             {!isLoading && <ArrowRight size={18} />}
+          </button>
+          
+          <button type="button" onClick={handleBiometricLogin} className="btn" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem', background: 'var(--bg-surface)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)' }} disabled={isLoading}>
+            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👆</span> Sign in with Biometrics / Passkey
           </button>
         </form>
 
