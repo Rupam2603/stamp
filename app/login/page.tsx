@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { loginUser } from '@/app/actions/auth';
 import { useRouter } from 'next/navigation';
 
@@ -11,7 +11,19 @@ export default function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    // Check for locally saved credentials
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem('savedEmail');
+      const savedPassword = localStorage.getItem('savedPassword');
+      if (savedEmail) setEmail(savedEmail);
+      if (savedPassword) setPassword(savedPassword);
+    }
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
@@ -24,6 +36,15 @@ export default function Login() {
         setSuccess('Logged in successfully! Redirecting...');
         if (typeof window !== 'undefined') {
           localStorage.setItem('userId', res.userId!);
+          
+          // Save credentials locally
+          const currentEmail = formData.get('email') as string;
+          const currentPassword = formData.get('password') as string;
+          if (currentEmail && currentPassword) {
+            localStorage.setItem('savedEmail', currentEmail);
+            localStorage.setItem('savedPassword', currentPassword);
+          }
+
           if (res.isAdmin) {
              localStorage.setItem('isAdmin', 'true');
           }
@@ -71,7 +92,7 @@ export default function Login() {
             <label className="form-label" htmlFor="email">Email Address</label>
             <div style={{ position: 'relative' }}>
               <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-              <input type="email" id="email" name="email" className="input" placeholder="you@example.com" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
+              <input type="email" id="email" name="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className="input" placeholder="you@example.com" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
             </div>
           </div>
 
@@ -82,7 +103,7 @@ export default function Login() {
             </div>
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-              <input type={showPassword ? "text" : "password"} id="password" name="password" className="input" placeholder="••••••••" style={{ paddingLeft: '48px', paddingRight: '48px', marginBottom: 0 }} required disabled={isLoading} />
+              <input type={showPassword ? "text" : "password"} id="password" name="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" placeholder="••••••••" style={{ paddingLeft: '48px', paddingRight: '48px', marginBottom: 0 }} required disabled={isLoading} />
               <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)}

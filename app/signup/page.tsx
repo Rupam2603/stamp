@@ -24,6 +24,13 @@ export default function Signup() {
         setSuccess('Account created successfully! Logging you in...');
         if (typeof window !== 'undefined') {
           localStorage.setItem('userId', res.userId);
+          // Save credentials locally as requested ("save on only in their devices")
+          const email = formData.get('email') as string;
+          const password = formData.get('password') as string;
+          if (email && password) {
+            localStorage.setItem('savedEmail', email);
+            localStorage.setItem('savedPassword', password);
+          }
           window.dispatchEvent(new Event('auth-change'));
         }
         setTimeout(() => {
@@ -72,7 +79,7 @@ export default function Signup() {
             <label className="form-label" htmlFor="email">Email Address</label>
             <div style={{ position: 'relative' }}>
               <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-              <input type="email" id="email" name="email" className="input" placeholder="you@example.com" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
+              <input type="email" id="email" name="email" autoComplete="email" className="input" placeholder="you@example.com" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
             </div>
           </div>
 
@@ -80,7 +87,7 @@ export default function Signup() {
             <label className="form-label" htmlFor="password">Password</label>
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-              <input type={showPassword ? "text" : "password"} id="password" name="password" className="input" placeholder="••••••••" style={{ paddingLeft: '48px', paddingRight: '48px', marginBottom: 0 }} required disabled={isLoading} />
+              <input type={showPassword ? "text" : "password"} id="password" name="password" autoComplete="new-password" className="input" placeholder="••••••••" style={{ paddingLeft: '48px', paddingRight: '48px', marginBottom: 0 }} required disabled={isLoading} />
               <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)}
