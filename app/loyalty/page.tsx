@@ -380,6 +380,21 @@ export default function Loyalty() {
               </div>
             </div>
           </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{
+              background: 'var(--accent-terracotta-dim)',
+              border: '1px solid var(--border-medium)',
+              color: 'var(--accent-terracotta)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              padding: '6px 14px',
+              borderRadius: 'var(--radius-full)',
+              display: 'inline-block'
+            }}>
+              Stamp {stamps} on Card {completedCards + 1} is collected
+            </span>
+          </div>
         </div>
 
         {/* STAMP SLOTS */}
