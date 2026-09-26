@@ -23,7 +23,7 @@ export default function Login() {
       if (res.success) {
         setSuccess('Logged in successfully! Redirecting...');
         if (typeof window !== 'undefined') {
-          localStorage.setItem('userId', res.userId);
+          localStorage.setItem('userId', res.userId!);
           if (res.isAdmin) {
              localStorage.setItem('isAdmin', 'true');
           }
