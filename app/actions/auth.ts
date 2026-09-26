@@ -9,9 +9,10 @@ export async function registerUser(formData: FormData) {
   try {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
+    const mobile = formData.get('mobile') as string;
     const password = formData.get('password') as string;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !mobile || !password) {
       return { success: false, message: 'All fields are required.' };
     }
 
@@ -30,6 +31,7 @@ export async function registerUser(formData: FormData) {
       id,
       name,
       email,
+      mobile,
       passwordHash,
     });
 

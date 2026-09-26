@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { registerUser } from '@/app/actions/auth';
 import { useRouter } from 'next/navigation';
@@ -80,6 +80,14 @@ export default function Signup() {
             <div style={{ position: 'relative' }}>
               <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
               <input type="email" id="email" name="email" autoComplete="email" className="input" placeholder="you@example.com" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <label className="form-label" htmlFor="mobile">Mobile Number</label>
+            <div style={{ position: 'relative' }}>
+              <Phone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+              <input type="tel" id="mobile" name="mobile" className="input" placeholder="e.g. +91 9876543210" style={{ paddingLeft: '48px', marginBottom: 0 }} required disabled={isLoading} />
             </div>
           </div>
 

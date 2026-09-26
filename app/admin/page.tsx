@@ -9,6 +9,7 @@ import { Users, Award, ShieldAlert, RefreshCw, Search } from 'lucide-react';
 interface UserData {
   id: string;
   email: string;
+  mobile: string | null;
   name: string;
   isAdmin: boolean;
   stamps: number;
@@ -127,6 +128,7 @@ export default function AdminDashboard() {
               <tr style={{ background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-medium)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                 <th style={{ padding: '16px 24px', fontWeight: 500 }}>Name</th>
                 <th style={{ padding: '16px 24px', fontWeight: 500 }}>Email</th>
+                <th style={{ padding: '16px 24px', fontWeight: 500 }}>Mobile</th>
                 <th style={{ padding: '16px 24px', fontWeight: 500 }}>Role</th>
                 <th style={{ padding: '16px 24px', fontWeight: 500 }}>Stamps</th>
                 <th style={{ padding: '16px 24px', fontWeight: 500 }}>Completed Cards</th>
@@ -138,6 +140,7 @@ export default function AdminDashboard() {
                 <tr key={user.id} style={{ borderBottom: '1px solid var(--border-medium)', transition: 'background 0.2s ease' }}>
                   <td style={{ padding: '16px 24px', fontWeight: 500 }}>{user.name}</td>
                   <td style={{ padding: '16px 24px', color: 'var(--text-secondary)' }}>{user.email}</td>
+                  <td style={{ padding: '16px 24px', color: 'var(--text-secondary)' }}>{user.mobile || 'N/A'}</td>
                   <td style={{ padding: '16px 24px' }}>
                     {user.isAdmin ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#ffebee', color: '#c62828', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
@@ -177,7 +180,7 @@ export default function AdminDashboard() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+                  <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
                     No customers found matching "{searchQuery}"
                   </td>
                 </tr>

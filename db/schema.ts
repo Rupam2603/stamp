@@ -4,6 +4,7 @@ export const users = pgTable("users", {
   id: text("id").primaryKey(), // We can use UUID or standard strings
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  mobile: text("mobile"), // Added mobile number
   passwordHash: text("password_hash").notNull(),
   stamps: integer("stamps").default(0).notNull(),
   completedCards: integer("completed_cards").default(0).notNull(),
