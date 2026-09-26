@@ -9,11 +9,7 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
-import type {
-  RegistrationResponseJSON,
-  AuthenticationResponseJSON,
-  AuthenticatorTransportFuture,
-} from '@simplewebauthn/types';
+import type { AuthenticatorTransport } from '@simplewebauthn/server';
 
 const rpID = process.env.NODE_ENV === 'production' ? (process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL).hostname : 'localhost') : 'localhost';
 const origin = process.env.NODE_ENV === 'production' ? (process.env.NEXT_PUBLIC_APP_URL || `https://${rpID}`) : `http://${rpID}:3000`;
@@ -22,27 +18,24 @@ const rpName = 'BHAAR MOSHAI';
 // Generate Registration Options (when user wants to add a passkey)
 export async function generateRegOptions(userId: string) {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
+    const userRows = await db.select().from(users).where(eq(users.id, userId));
+    const user = userRows[0];
 
     if (!user) {
       return { success: false, message: 'User not found' };
     }
 
-    const userPasskeys = await db.query.passkeys.findMany({
-      where: eq(passkeys.userId, userId),
-    });
+    const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, userId));
 
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
-      userID: Buffer.from(user.id, 'utf8'),
+      userID: new TextEncoder().encode(user.id),
       userName: user.email,
-      excludeCredentials: userPasskeys.map((passkey) => ({
-        id: Buffer.from(passkey.id, 'base64url'),
+      excludeCredentials: userPasskeys.map((passkey: any) => ({
+        id: passkey.id, // String
         type: 'public-key',
-        transports: passkey.transports ? (passkey.transports.split(',') as AuthenticatorTransportFuture[]) : [],
+        transports: passkey.transports ? (passkey.transports.split(',') as AuthenticatorTransport[]) : [],
       })),
       authenticatorSelection: {
         residentKey: 'required',
@@ -59,11 +52,10 @@ export async function generateRegOptions(userId: string) {
   }
 }
 
-export async function verifyRegResponse(userId: string, response: RegistrationResponseJSON) {
+export async function verifyRegResponse(userId: string, response: any) {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
+    const userRows = await db.select().from(users).where(eq(users.id, userId));
+    const user = userRows[0];
 
     if (!user || !user.currentChallenge) {
       return { success: false, message: 'User or challenge not found' };
@@ -79,19 +71,20 @@ export async function verifyRegResponse(userId: string, response: RegistrationRe
     const { verified, registrationInfo } = verification;
 
     if (verified && registrationInfo) {
-      const { credentialID, credentialPublicKey, counter, credentialDeviceType, credentialBackedUp } = registrationInfo;
+      const { credential, credentialDeviceType, credentialBackedUp } = registrationInfo;
+      const { id, publicKey, counter, transports } = credential;
 
-      const credentialIDBase64 = Buffer.from(credentialID).toString('base64url');
-      const credentialPublicKeyBase64 = Buffer.from(credentialPublicKey).toString('base64url');
+      // publicKey is a Uint8Array, we need to convert to base64url for db
+      const credentialPublicKeyBase64 = Buffer.from(publicKey).toString('base64url');
 
       await db.insert(passkeys).values({
-        id: credentialIDBase64,
+        id: id, // It's already a string in simplewebauthn v10
         userId: user.id,
         publicKey: credentialPublicKeyBase64,
         counter: counter,
         deviceType: credentialDeviceType,
         backedUp: credentialBackedUp,
-        transports: response.response.transports ? response.response.transports.join(',') : '',
+        transports: transports ? transports.join(',') : '',
       });
 
       await db.update(users).set({ currentChallenge: null }).where(eq(users.id, user.id));
@@ -108,24 +101,21 @@ export async function verifyRegResponse(userId: string, response: RegistrationRe
 
 export async function generateAuthOptions(email: string) {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
+    const userRows = await db.select().from(users).where(eq(users.email, email));
+    const user = userRows[0];
 
     if (!user) {
       return { success: false, message: 'User not found' };
     }
 
-    const userPasskeys = await db.query.passkeys.findMany({
-      where: eq(passkeys.userId, user.id),
-    });
+    const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, user.id));
 
     const options = await generateAuthenticationOptions({
       rpID,
-      allowCredentials: userPasskeys.map((passkey) => ({
-        id: Buffer.from(passkey.id, 'base64url'),
+      allowCredentials: userPasskeys.map((passkey: any) => ({
+        id: passkey.id,
         type: 'public-key',
-        transports: passkey.transports ? (passkey.transports.split(',') as AuthenticatorTransportFuture[]) : [],
+        transports: passkey.transports ? (passkey.transports.split(',') as AuthenticatorTransport[]) : [],
       })),
       userVerification: 'preferred',
     });
@@ -140,19 +130,17 @@ export async function generateAuthOptions(email: string) {
   }
 }
 
-export async function verifyAuthResponse(email: string, response: AuthenticationResponseJSON) {
+export async function verifyAuthResponse(email: string, response: any) {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
+    const userRows = await db.select().from(users).where(eq(users.email, email));
+    const user = userRows[0];
 
     if (!user || !user.currentChallenge) {
       return { success: false, message: 'User or challenge not found' };
     }
 
-    const passkey = await db.query.passkeys.findFirst({
-      where: eq(passkeys.id, response.id),
-    });
+    const passkeyRows = await db.select().from(passkeys).where(eq(passkeys.id, response.id));
+    const passkey = passkeyRows[0];
 
     if (!passkey || passkey.userId !== user.id) {
       return { success: false, message: 'Passkey not found for user' };
@@ -163,11 +151,11 @@ export async function verifyAuthResponse(email: string, response: Authentication
       expectedChallenge: user.currentChallenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
-      authenticator: {
-        credentialID: Buffer.from(passkey.id, 'base64url'),
-        credentialPublicKey: Buffer.from(passkey.publicKey, 'base64url'),
+      credential: {
+        id: passkey.id,
+        publicKey: Buffer.from(passkey.publicKey, 'base64url'), // Convert back to Uint8Array/Buffer
         counter: Number(passkey.counter),
-        transports: passkey.transports ? (passkey.transports.split(',') as AuthenticatorTransportFuture[]) : [],
+        transports: passkey.transports ? (passkey.transports.split(',') as AuthenticatorTransport[]) : [],
       },
     });
 
