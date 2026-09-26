@@ -17,6 +17,27 @@ const STORAGE_KEYS = {
   COMPLETED: 'bhaar_moshai_completed_cards',
 };
 
+const SHOP_LOCATION = {
+  latitude: 22.5726, // Default to Kolkata center, user should update this to exact shop coordinates
+  longitude: 88.3639
+};
+const MAX_DISTANCE_METERS = 50;
+
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371e3; // metres
+  const phi1 = (lat1 * Math.PI) / 180;
+  const phi2 = (lat2 * Math.PI) / 180;
+  const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
+  const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // in metres
+};
+
 export default function Loyalty() {
   const [stamps, setStamps] = useState<number>(0);
   const [completedCards, setCompletedCards] = useState<number>(0);
@@ -27,6 +48,8 @@ export default function Loyalty() {
   const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
   const [hasMounted, setHasMounted] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const router = useRouter();
 
   const totalStamps = 3;
@@ -190,6 +213,45 @@ export default function Loyalty() {
     if (isLocked) {
       return;
     }
+
+    setLocationError(null);
+    setIsLocating(true);
+
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser.");
+      setIsLocating(false);
+      return;
+    }
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+
+      const distance = calculateDistance(
+        position.coords.latitude,
+        position.coords.longitude,
+        SHOP_LOCATION.latitude,
+        SHOP_LOCATION.longitude
+      );
+
+      if (distance > MAX_DISTANCE_METERS) {
+        setLocationError(`You must be at the shop to collect a stamp! (Distance: ${Math.round(distance)}m)`);
+        setIsLocating(false);
+        return;
+      }
+    } catch (error: any) {
+      console.error(error);
+      setLocationError("Failed to get your location. Please enable location services.");
+      setIsLocating(false);
+      return;
+    }
+
+    setIsLocating(false);
 
     const nextStamp = stamps + 1;
     const now = Date.now();
@@ -464,15 +526,17 @@ export default function Loyalty() {
                 type="button"
                 className="btn btn-primary"
                 onClick={handleAddStamp}
-                disabled={isAutoResetting || stamps === totalStamps}
+                disabled={isAutoResetting || stamps === totalStamps || isLocating}
                 style={{
-                  opacity: isAutoResetting ? 0.65 : 1,
-                  cursor: isAutoResetting ? 'not-allowed' : 'pointer',
+                  opacity: isAutoResetting || isLocating ? 0.65 : 1,
+                  cursor: isAutoResetting || isLocating ? 'not-allowed' : 'pointer',
                   transform: animatingIndex !== null ? 'scale(0.98)' : 'scale(1)',
                   transition: 'transform 0.1s ease',
                 }}
               >
-                {isAutoResetting
+                {isLocating 
+                  ? 'Verifying Location...'
+                  : isAutoResetting
                   ? 'Card Auto-resetting...'
                   : stamps === 0
                   ? 'Collect First Stamp'
@@ -499,6 +563,12 @@ export default function Loyalty() {
             {stamps === totalStamps && secondsRemaining > 0 && (
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
                 Card auto-resets in <strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: '0.95rem' }}>{Math.floor(secondsRemaining / 60).toString().padStart(2, '0')}:{(secondsRemaining % 60).toString().padStart(2, '0')}</strong>
+              </div>
+            )}
+            
+            {locationError && (
+              <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '4px', textAlign: 'center', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertTriangle size={14} /> {locationError}
               </div>
             )}
           </div>
