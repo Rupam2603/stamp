@@ -378,32 +378,7 @@ export default function Loyalty() {
               <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
                 BHAAR MOSHAI
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--accent-terracotta)', fontWeight: 500 }}>
-                ৩-ভাঁড় লয়ালটি পাস · Min ₹50 Spend / Stamp
-              </div>
             </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {completedCards > 0 && (
-              <span style={{
-                background: 'rgba(74, 222, 128, 0.1)',
-                border: '1px solid rgba(74, 222, 128, 0.3)',
-                color: '#16a34a',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-full)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                <Trophy size={16} /> {completedCards} {completedCards === 1 ? 'Card' : 'Cards'} Completed
-              </span>
-            )}
-            <span style={{ background: 'var(--accent-terracotta-dim)', border: '1px solid var(--border-medium)', color: 'var(--accent-terracotta)', fontSize: '0.82rem', fontWeight: 600, padding: '6px 14px', borderRadius: 'var(--radius-full)', display: 'inline-block' }}>
-              Pass #BM-2026-8842
-            </span>
           </div>
         </div>
 
