@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Sparkles, AlertTriangle, Hourglass, Coffee, PartyPopper, RotateCw, Zap, Trophy, Gift, Lock, Circle, CheckCircle2 } from 'lucide-react';
 import { getLoyaltyData, updateLoyaltyData } from '@/app/actions/loyalty';
 import { useRouter } from 'next/navigation';
+import confetti from 'canvas-confetti';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 10 minutes = 600,000 ms
@@ -123,7 +124,7 @@ export default function Loyalty() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastStampTime, stamps, completedCards]);
+  }, [lastStampTime, stamps, completedCards, userId]);
 
   // Clean up auto-reset timer on unmount
   useEffect(() => {
@@ -133,6 +134,44 @@ export default function Loyalty() {
   }, []);
 
   const isLocked = secondsRemaining > 0 && stamps > 0 && stamps < totalStamps;
+
+  const triggerSmallConfetti = () => {
+    const colors = ['#ea580c', '#c2410c', '#fb923c'];
+    confetti({
+      particleCount: 40,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: colors,
+      zIndex: 100,
+    });
+  };
+
+  const triggerBigConfetti = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#ea580c', '#c2410c', '#fb923c', '#22c55e', '#eab308']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#ea580c', '#c2410c', '#fb923c', '#22c55e', '#eab308']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  };
 
   // Stamp collection handler
   const handleAddStamp = async () => {
@@ -157,9 +196,10 @@ export default function Loyalty() {
 
     if (nextStamp < totalStamps) {
       // Stamp 1 or 2 collected -> lock for 10 minutes!
+      triggerSmallConfetti();
       setStamps(nextStamp);
       setAnimatingIndex(stamps);
-      setTimeout(() => setAnimatingIndex(null), 600);
+      setTimeout(() => setAnimatingIndex(null), 800); // Wait for animation
       setLastStampTime(now);
       const newHistory = stamps === 0 ? [now] : [...stampHistory, now];
       setStampHistory(newHistory);
@@ -177,9 +217,10 @@ export default function Loyalty() {
       }
     } else {
       // 3rd stamp collected -> wait 10 mins before new card
+      triggerBigConfetti();
       setStamps(3);
       setAnimatingIndex(stamps);
-      setTimeout(() => setAnimatingIndex(null), 600);
+      setTimeout(() => setAnimatingIndex(null), 800);
       setLastStampTime(now);
       const newHistory = stamps === 0 ? [now] : [...stampHistory, now];
       setStampHistory(newHistory);
@@ -262,16 +303,56 @@ export default function Loyalty() {
       {/* VIRTUAL MEMBERSHIP CARD */}
       <style>{`
         @keyframes stampDrop {
-          0% { transform: scale(2) rotate(-20deg); opacity: 0; }
-          40% { transform: scale(0.9) rotate(5deg); opacity: 1; }
-          70% { transform: scale(1.05) rotate(-2deg); }
-          100% { transform: scale(1) rotate(0deg); }
+          0% { 
+            transform: scale(2.5) rotate(-30deg); 
+            opacity: 0; 
+            filter: drop-shadow(0 20px 10px rgba(0,0,0,0.2));
+          }
+          40% { 
+            transform: scale(0.9) rotate(8deg); 
+            opacity: 1; 
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+          }
+          60% { 
+            transform: scale(1.1) rotate(-4deg); 
+          }
+          80% { 
+            transform: scale(0.95) rotate(2deg); 
+          }
+          100% { 
+            transform: scale(1) rotate(0deg); 
+            filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+          }
         }
+
+        @keyframes inkPulse {
+          0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+          70% { box-shadow: 0 0 0 25px rgba(234, 88, 12, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+        }
+
+        @keyframes cardShake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-4px) rotate(-1deg); }
+          40% { transform: translateX(4px) rotate(1deg); }
+          60% { transform: translateX(-2px) rotate(-0.5deg); }
+          80% { transform: translateX(2px) rotate(0.5deg); }
+        }
+
         .stamp-animate {
-          animation: stampDrop 0.6s var(--ease-spring) forwards;
+          animation: stampDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .slot-animate {
+          animation: inkPulse 0.8s ease-out forwards;
+        }
+
+        .card-shake {
+          animation: cardShake 0.4s ease-in-out;
         }
       `}</style>
       <div
+        className={animatingIndex !== null ? 'card-shake' : ''}
         style={{
           background: 'var(--bg-surface-elevated)',
           border: '1px solid var(--border-medium)',
@@ -280,6 +361,7 @@ export default function Loyalty() {
           marginBottom: '36px',
           position: 'relative',
           overflow: 'hidden',
+          transition: 'all 0.3s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
@@ -333,16 +415,18 @@ export default function Loyalty() {
               const isStamped = i < stamps;
               const isReward = i === totalStamps - 1;
               const isNextSlotLocked = i === stamps && isLocked;
+              const isAnimating = animatingIndex === i;
 
               return (
                 <div
                   key={i}
-                  className={`stamp-slot ${isStamped ? 'stamped' : ''} ${isReward ? 'reward-slot' : ''}`}
+                  className={`stamp-slot ${isStamped ? 'stamped' : ''} ${isReward ? 'reward-slot' : ''} ${isAnimating ? 'slot-animate' : ''}`}
                   onClick={handleAddStamp}
                   style={{
                     cursor: isAutoResetting || isLocked ? 'not-allowed' : 'pointer',
                     opacity: isNextSlotLocked ? 0.6 : 1,
                     position: 'relative',
+                    borderRadius: '50%',
                   }}
                   title={
                     isStamped
@@ -357,7 +441,7 @@ export default function Loyalty() {
                   </span>
                   <span className="stamp-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isStamped ? (
-                      isReward ? <Gift size={32} className={animatingIndex === i ? 'stamp-animate' : ''} /> : <Coffee size={32} className={animatingIndex === i ? 'stamp-animate' : ''} />
+                      isReward ? <Gift size={32} className={isAnimating ? 'stamp-animate' : ''} /> : <Coffee size={32} className={isAnimating ? 'stamp-animate' : ''} />
                     ) : isNextSlotLocked ? (
                       <Lock size={32} style={{ color: 'var(--text-tertiary)' }} />
                     ) : (
@@ -394,6 +478,8 @@ export default function Loyalty() {
                 style={{
                   opacity: isAutoResetting ? 0.65 : 1,
                   cursor: isAutoResetting ? 'not-allowed' : 'pointer',
+                  transform: animatingIndex !== null ? 'scale(0.98)' : 'scale(1)',
+                  transition: 'transform 0.1s ease',
                 }}
               >
                 {isAutoResetting
