@@ -10,14 +10,37 @@ import {
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import type { AuthenticatorTransport } from '@simplewebauthn/server';
+import { headers } from 'next/headers';
 
-const rpID = process.env.NODE_ENV === 'production' ? (process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL).hostname : 'localhost') : 'localhost';
-const origin = process.env.NODE_ENV === 'production' ? (process.env.NEXT_PUBLIC_APP_URL || `https://${rpID}`) : `http://${rpID}:3000`;
 const rpName = 'BHAAR MOSHAI';
+
+async function getWebAuthnConfig() {
+  let rpID = 'localhost';
+  let origin = 'http://localhost:3000';
+
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_APP_URL) {
+    const url = new URL(process.env.NEXT_PUBLIC_APP_URL);
+    rpID = url.hostname;
+    origin = url.origin;
+  } else {
+    try {
+      const headersList = await headers();
+      const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'localhost:3000';
+      rpID = host.split(':')[0];
+      const protocol = headersList.get('x-forwarded-proto') || (rpID === 'localhost' ? 'http' : 'https');
+      origin = `${protocol}://${host}`;
+    } catch (e) {
+      console.warn('Could not read headers', e);
+    }
+  }
+
+  return { rpID, origin };
+}
 
 // Generate Registration Options (when user wants to add a passkey)
 export async function generateRegOptions(userId: string) {
   try {
+    const { rpID } = await getWebAuthnConfig();
     const userRows = await db.select().from(users).where(eq(users.id, userId));
     const user = userRows[0];
 
@@ -54,6 +77,7 @@ export async function generateRegOptions(userId: string) {
 
 export async function verifyRegResponse(userId: string, response: any) {
   try {
+    const { rpID, origin } = await getWebAuthnConfig();
     const userRows = await db.select().from(users).where(eq(users.id, userId));
     const user = userRows[0];
 
@@ -101,6 +125,7 @@ export async function verifyRegResponse(userId: string, response: any) {
 
 export async function generateAuthOptions(email: string) {
   try {
+    const { rpID } = await getWebAuthnConfig();
     const userRows = await db.select().from(users).where(eq(users.email, email));
     const user = userRows[0];
 
@@ -132,6 +157,7 @@ export async function generateAuthOptions(email: string) {
 
 export async function verifyAuthResponse(email: string, response: any) {
   try {
+    const { rpID, origin } = await getWebAuthnConfig();
     const userRows = await db.select().from(users).where(eq(users.email, email));
     const user = userRows[0];
 
