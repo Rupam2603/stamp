@@ -15,6 +15,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,7 +23,10 @@ export default function Login() {
     if (typeof window !== 'undefined') {
       const savedEmail = localStorage.getItem('savedEmail');
       const savedPassword = localStorage.getItem('savedPassword');
-      if (savedEmail) setEmail(savedEmail);
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
       if (savedPassword) setPassword(savedPassword);
     }
   }, []);
@@ -39,12 +43,15 @@ export default function Login() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('userId', res.userId!);
           
-          // Save credentials locally
+          // Save credentials locally if Remember me is checked
           const currentEmail = formData.get('email') as string;
           const currentPassword = formData.get('password') as string;
-          if (currentEmail && currentPassword) {
+          if (rememberMe && currentEmail && currentPassword) {
             localStorage.setItem('savedEmail', currentEmail);
             localStorage.setItem('savedPassword', currentPassword);
+          } else {
+            localStorage.removeItem('savedEmail');
+            localStorage.removeItem('savedPassword');
           }
 
           if (res.isAdmin) {
@@ -171,6 +178,19 @@ export default function Login() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+          </div>
+
+          <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center' }}>
+            <input 
+              type="checkbox" 
+              id="rememberMe" 
+              name="rememberMe"
+              checked={rememberMe} 
+              onChange={(e) => setRememberMe(e.target.checked)} 
+              style={{ marginRight: '8px', cursor: 'pointer' }} 
+              disabled={isLoading}
+            />
+            <label htmlFor="rememberMe" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>Remember me</label>
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem', marginBottom: '12px' }} disabled={isLoading}>
