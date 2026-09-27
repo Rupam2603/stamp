@@ -64,7 +64,6 @@ export default function RootLayout({
                     <li><a href="/activate">Activate Digital Card</a></li>
                     <li><a href="/loyalty">Check My Stamps</a></li>
                     <li><a href="/offers">Special Adda Offers</a></li>
-                    <li><a href="/verify">Verify Mobile Pass</a></li>
                   </ul>
                 </div>
 
