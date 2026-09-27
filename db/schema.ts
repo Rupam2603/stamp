@@ -34,6 +34,7 @@ export const offers = pgTable("offers", {
   desc: text("desc").notNull(),
   code: text("code").notNull(),
   badge: text("badge").notNull(),
+  imageUrl: text("image_url"),
   highlight: boolean("highlight").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

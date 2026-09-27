@@ -27,6 +27,7 @@ export async function createOffer(data: any) {
       code: data.code,
       badge: data.badge,
       highlight: data.highlight || false,
+      imageUrl: data.imageBase64 || null,
     };
     
     await db.insert(offers).values(newOffer);

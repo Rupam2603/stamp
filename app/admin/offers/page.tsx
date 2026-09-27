@@ -21,8 +21,30 @@ export default function AdminOffers() {
     desc: '',
     code: '',
     badge: '',
-    highlight: false
+    highlight: false,
+    imageBase64: ''
   });
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image must be smaller than 2MB");
+        return;
+      }
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = error => reject(error);
+        });
+        setFormData({ ...formData, imageBase64: base64 });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   const fetchOffers = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
@@ -56,7 +78,7 @@ export default function AdminOffers() {
       const res = await createOffer(formData);
       if (res.success) {
         setIsAdding(false);
-        setFormData({ tag: '', title: '', bengali: '', desc: '', code: '', badge: '', highlight: false });
+        setFormData({ tag: '', title: '', bengali: '', desc: '', code: '', badge: '', highlight: false, imageBase64: '' });
         fetchOffers();
       } else {
         alert(res.error || 'Failed to create offer');
@@ -145,6 +167,15 @@ export default function AdminOffers() {
               <label className="form-label">Description</label>
               <textarea required className="input" style={{ minHeight: '80px', resize: 'vertical' }} value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} placeholder="Offer details..." />
             </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label className="form-label">Offer Image (Optional, max 2MB)</label>
+              <input type="file" accept="image/*" onChange={handleImageChange} className="input" style={{ paddingTop: '10px' }} />
+              {formData.imageBase64 && (
+                <div style={{ marginTop: '12px' }}>
+                  <img src={formData.imageBase64} alt="Preview" style={{ height: '120px', borderRadius: '8px', objectFit: 'cover' }} />
+                </div>
+              )}
+            </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input type="checkbox" id="highlight" checked={formData.highlight} onChange={e => setFormData({...formData, highlight: e.target.checked})} />
               <label htmlFor="highlight" style={{ cursor: 'pointer', color: 'var(--text-secondary)' }}>Highlight this offer</label>
@@ -176,6 +207,12 @@ export default function AdminOffers() {
               <Trash2 size={16} />
             </button>
             
+            {offer.imageUrl && (
+              <div style={{ width: '100%', height: '160px', marginBottom: '16px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                <img src={offer.imageUrl} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--accent-terracotta)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 {offer.tag}
