@@ -98,7 +98,7 @@ export default function Login() {
         authResp = await startAuthentication({ optionsJSON: optionsRes.options });
       } catch (err: any) {
         if (err.name === 'NotAllowedError') {
-          throw new Error('Biometric authentication was cancelled or not allowed.');
+          throw new Error('No passkey found on this device, or the request was cancelled. Please log in with your password and set up biometrics in your account first.');
         }
         throw err;
       }
