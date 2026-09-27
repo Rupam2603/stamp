@@ -2,11 +2,33 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 export default function Activate() {
-  const memberName = 'Valued Guest';
-  const memberContact = 'Linked to Account';
-  const memberPassId = `BM-2026-0000`;
+  const [memberName, setMemberName] = useState('Valued Guest');
+  const [memberContact, setMemberContact] = useState('Linked to Account');
+  const [memberPassId, setMemberPassId] = useState('BM-2026-0000');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const email = localStorage.getItem('savedEmail');
+      const userId = localStorage.getItem('userId');
+      
+      if (email) {
+        setMemberContact(email);
+        setMemberName(email.split('@')[0]);
+      }
+      
+      if (userId) {
+        const uniquePart = userId.slice(-6).toUpperCase();
+        setMemberPassId(`BM-2026-${uniquePart}`);
+      } else {
+        // Fallback random if not logged in
+        const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+        setMemberPassId(`BM-2026-${randomPart}`);
+      }
+    }
+  }, []);
 
   return (
     <main className="main-section animate-fade-up" style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
