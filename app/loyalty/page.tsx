@@ -22,7 +22,7 @@ const SHOP_LOCATION = {
   latitude: 22.7513902,
   longitude: 88.3537697
 };
-const MAX_DISTANCE_METERS = 50;
+const MAX_DISTANCE_METERS = 5;
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371e3; // metres
@@ -32,8 +32,8 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
 
   const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-            Math.cos(phi1) * Math.cos(phi2) *
-            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    Math.cos(phi1) * Math.cos(phi2) *
+    Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c; // in metres
@@ -128,7 +128,7 @@ export default function Loyalty() {
           setCompletedCards(nextCompleted);
           setLastStampTime(null);
           setStampHistory([]);
-          
+
           if (userId) {
             await updateLoyaltyData(userId, {
               stamps: 0,
@@ -204,7 +204,7 @@ export default function Loyalty() {
     setIsRegisteringBiometrics(true);
     setLocationError(null);
     setBiometricsSuccess(null);
-    
+
     try {
       const optionsRes = await generateRegOptions(userId);
       if (!optionsRes.success || !optionsRes.options) {
@@ -238,7 +238,7 @@ export default function Loyalty() {
   // Stamp collection handler
   const handleAddStamp = async () => {
     if (isAutoResetting) return;
-    
+
     if (!userId) {
       router.push('/login');
       return;
@@ -327,7 +327,7 @@ export default function Loyalty() {
       setStampHistory(newHistory);
       setSecondsRemaining(COOLDOWN_MINUTES * 60);
       setIsAutoResetting(false);
-      
+
       if (userId) {
         await updateLoyaltyData(userId, { stamps: 3, completedCards, lastStampTime: now, stampHistory: newHistory });
       } else {
@@ -351,7 +351,7 @@ export default function Loyalty() {
     setSecondsRemaining(0);
     setIsAutoResetting(false);
     setStampHistory([]);
-    
+
     if (userId) {
       await updateLoyaltyData(userId, { stamps: 0, completedCards, lastStampTime: null, stampHistory: [] });
     } else {
@@ -481,7 +481,7 @@ export default function Loyalty() {
               </div>
             </div>
           </div>
-          
+
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{
               background: 'var(--accent-terracotta-dim)',
@@ -501,60 +501,60 @@ export default function Loyalty() {
         {/* STAMP SLOTS */}
         {!isLocked && (
           <div style={{ marginBottom: '24px' }}>
-          <div className="stamp-grid">
-            {Array.from({ length: totalStamps }).map((_, i) => {
-              const isStamped = i < stamps;
-              const isReward = i === totalStamps - 1;
-              const isNextSlotLocked = i === stamps && isLocked;
-              const isAnimating = animatingIndex === i;
+            <div className="stamp-grid">
+              {Array.from({ length: totalStamps }).map((_, i) => {
+                const isStamped = i < stamps;
+                const isReward = i === totalStamps - 1;
+                const isNextSlotLocked = i === stamps && isLocked;
+                const isAnimating = animatingIndex === i;
 
-              return (
-                <div
-                  key={i}
-                  className={`stamp-slot ${isStamped ? 'stamped' : ''} ${isReward ? 'reward-slot' : ''} ${isAnimating ? 'slot-animate' : ''}`}
-                  onClick={handleAddStamp}
-                  style={{
-                    cursor: isAutoResetting || isLocked ? 'not-allowed' : 'pointer',
-                    opacity: isNextSlotLocked ? 0.6 : 1,
-                    position: 'relative',
-                    borderRadius: '50%',
-                  }}
-                  title={
-                    isStamped
-                      ? `Stamp ${i + 1} collected!`
-                      : isNextSlotLocked
-                      ? `Locked: wait 10 minutes`
-                      : `Collect stamp ${i + 1} (Min ₹50 spend)`
-                  }
-                >
-                  <span className="stamp-number">
-                    {isReward ? 'Grab Your Offer' : `CUP #${i + 1}`}
-                  </span>
-                  <span className="stamp-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {isStamped ? (
-                      isReward ? <Gift size={32} className={isAnimating ? 'stamp-animate' : ''} /> : <Coffee size={32} className={isAnimating ? 'stamp-animate' : ''} />
-                    ) : isNextSlotLocked ? (
-                      <Lock size={32} style={{ color: 'var(--text-tertiary)' }} />
-                    ) : (
-                      isReward ? <Sparkles size={32} style={{ color: 'var(--text-tertiary)' }} /> : <Circle size={32} style={{ color: 'var(--text-tertiary)' }} />
-                    )}
-                  </span>
-                  <span className="stamp-desc" style={{ color: isStamped ? 'var(--accent-terracotta)' : isNextSlotLocked ? 'var(--text-tertiary)' : 'var(--text-secondary)', fontWeight: 600 }}>
-                    {isStamped
-                      ? isReward
-                        ? 'Grab Your Offer'
-                        : 'Stamped'
-                      : isNextSlotLocked
-                      ? `Locked`
-                      : isReward
-                      ? '3rd Reward'
-                      : 'Min ₹50'}
-                  </span>
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    key={i}
+                    className={`stamp-slot ${isStamped ? 'stamped' : ''} ${isReward ? 'reward-slot' : ''} ${isAnimating ? 'slot-animate' : ''}`}
+                    onClick={handleAddStamp}
+                    style={{
+                      cursor: isAutoResetting || isLocked ? 'not-allowed' : 'pointer',
+                      opacity: isNextSlotLocked ? 0.6 : 1,
+                      position: 'relative',
+                      borderRadius: '50%',
+                    }}
+                    title={
+                      isStamped
+                        ? `Stamp ${i + 1} collected!`
+                        : isNextSlotLocked
+                          ? `Locked: wait 10 minutes`
+                          : `Collect stamp ${i + 1} (Min ₹50 spend)`
+                    }
+                  >
+                    <span className="stamp-number">
+                      {isReward ? 'Grab Your Offer' : `CUP #${i + 1}`}
+                    </span>
+                    <span className="stamp-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isStamped ? (
+                        isReward ? <Gift size={32} className={isAnimating ? 'stamp-animate' : ''} /> : <Coffee size={32} className={isAnimating ? 'stamp-animate' : ''} />
+                      ) : isNextSlotLocked ? (
+                        <Lock size={32} style={{ color: 'var(--text-tertiary)' }} />
+                      ) : (
+                        isReward ? <Sparkles size={32} style={{ color: 'var(--text-tertiary)' }} /> : <Circle size={32} style={{ color: 'var(--text-tertiary)' }} />
+                      )}
+                    </span>
+                    <span className="stamp-desc" style={{ color: isStamped ? 'var(--accent-terracotta)' : isNextSlotLocked ? 'var(--text-tertiary)' : 'var(--text-secondary)', fontWeight: 600 }}>
+                      {isStamped
+                        ? isReward
+                          ? 'Grab Your Offer'
+                          : 'Stamped'
+                        : isNextSlotLocked
+                          ? `Locked`
+                          : isReward
+                            ? '3rd Reward'
+                            : 'Min ₹50'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
         )}
 
         {/* ACTION / COOLDOWN AREA */}
@@ -573,15 +573,15 @@ export default function Loyalty() {
                   transition: 'transform 0.1s ease',
                 }}
               >
-                {isLocating 
+                {isLocating
                   ? 'Verifying Location...'
                   : isAutoResetting
-                  ? 'Card Auto-resetting...'
-                  : stamps === 0
-                  ? 'Collect First Stamp'
-                  : stamps < totalStamps
-                  ? `Collect Stamp #${stamps + 1}`
-                  : '3/3 Collected! Reward Unlocked'}
+                    ? 'Card Auto-resetting...'
+                    : stamps === 0
+                      ? 'Collect First Stamp'
+                      : stamps < totalStamps
+                        ? `Collect Stamp #${stamps + 1}`
+                        : '3/3 Collected! Reward Unlocked'}
               </button>
 
               {stamps > 0 && !isAutoResetting && (
@@ -598,13 +598,13 @@ export default function Loyalty() {
                 </button>
               )}
             </div>
-            
+
             {stamps === totalStamps && secondsRemaining > 0 && (
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
                 Card auto-resets in <strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: '0.95rem' }}>{Math.floor(secondsRemaining / 60).toString().padStart(2, '0')}:{(secondsRemaining % 60).toString().padStart(2, '0')}</strong>
               </div>
             )}
-            
+
             {locationError && (
               <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '4px', textAlign: 'center', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <AlertTriangle size={14} /> {locationError}
@@ -619,13 +619,13 @@ export default function Loyalty() {
           Browse Current Adda Offers & Combos →
         </Link>
       </div>
-      
+
       {userId && (
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <button 
+          <button
             onClick={handleRegisterBiometrics}
             disabled={isRegisteringBiometrics}
-            className="btn" 
+            className="btn"
             style={{ padding: '10px 16px', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--border-medium)', color: 'var(--text-secondary)' }}
           >
             {isRegisteringBiometrics ? 'Setting up...' : 'Setup Biometric Login (FaceID / Fingerprint)'}
