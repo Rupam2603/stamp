@@ -94,7 +94,13 @@ export default function AdminDashboard() {
           >
             <RefreshCw size={16} className={isRefreshing ? 'spin-anim' : ''} /> Refresh
           </button>
-
+          <button 
+            onClick={() => router.push('/admin/offers')}
+            className="btn btn-primary" 
+            style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            Manage Offers
+          </button>
         </div>
       </div>
       <style>{`

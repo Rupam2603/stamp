@@ -1,9 +1,12 @@
 import Link from 'next/link';
+import { getAllOffers } from '@/app/actions/offers';
 
-const offersList: any[] = [];
+export default async function Offers() {
+  const res = await getAllOffers();
+  const offersList: any[] = res.success ? (res.offers || []) : [];
 
-export default function Offers() {
   return (
+
     <main className="main-section animate-fade-up">
       <div className="section-header">
         <span className="section-label">EXCLUSIVE ADDA DEALS</span>

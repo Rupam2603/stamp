@@ -25,3 +25,15 @@ export const passkeys = pgTable("passkeys", {
   transports: text("transports"), // Comma separated list of transports
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const offers = pgTable("offers", {
+  id: text("id").primaryKey(), 
+  tag: text("tag").notNull(),
+  title: text("title").notNull(),
+  bengali: text("bengali"),
+  desc: text("desc").notNull(),
+  code: text("code").notNull(),
+  badge: text("badge").notNull(),
+  highlight: boolean("highlight").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
